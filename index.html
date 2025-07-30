@@ -150,8 +150,8 @@
 
     <!-- Main Application Container -->
     <div id="app-container">
-        <!-- Auth Screen -->
-        <div id="auth-screen" class="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+        <!-- Auth Screen (now hidden by default) -->
+        <div id="auth-screen" class="min-h-screen flex items-center justify-center bg-gray-50 px-4 hidden">
             <div class="max-w-md w-full">
                 <div class="text-center mb-8">
                     <h1 class="text-4xl font-bold text-gray-800"><span class="text-indigo-600">Construct</span>OS</h1>
@@ -163,8 +163,8 @@
             </div>
         </div>
 
-        <!-- Main App Screen (hidden by default) -->
-        <div id="main-app" class="hidden">
+        <!-- Main App Screen (now visible by default) -->
+        <div id="main-app">
             <header class="bg-white shadow-sm sticky top-0 z-40">
                 <nav class="container mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center">
                     <div class="text-2xl font-bold text-gray-800">
@@ -172,7 +172,7 @@
                     </div>
                     <div class="flex items-center space-x-4">
                         <span id="user-email" class="text-sm text-gray-600 hidden sm:block"></span>
-                        <button id="logout-button" class="text-sm font-medium text-indigo-600 hover:text-indigo-800">Logout</button>
+                        <button id="logout-button" class="text-sm font-medium text-indigo-600 hover:text-indigo-800 hidden">Logout</button>
                     </div>
                 </nav>
             </header>
@@ -263,43 +263,8 @@
         }
 
         // --- Authentication Logic ---
-        onAuthStateChanged(auth, async (user) => {
-            if (user && !user.isAnonymous) {
-                currentUser = user;
-                const userDocRef = doc(db, `/artifacts/${appId}/users/${user.uid}/userData/profile`);
-                const userDoc = await getDoc(userDocRef);
-                if (userDoc.exists()) {
-                    currentUserRole = userDoc.data().role;
-                    userEmailSpan.textContent = `${user.email} (${currentUserRole})`;
-                }
-                authScreen.classList.add('hidden');
-                mainApp.classList.remove('hidden');
-                renderDashboard();
-            } else {
-                currentUser = null;
-                currentUserRole = null;
-                clearSubscriptions();
-                authScreen.classList.remove('hidden');
-                mainApp.classList.add('hidden');
-                renderLoginForm();
-            }
-        });
-
-        async function handleInitialAuth() {
-            // This function is now primarily for handling special auth tokens in certain environments.
-            // The onAuthStateChanged listener will handle the initial user state for regular web deployment.
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                }
-            } catch (error) {
-                console.error("Initial auth token failed:", error);
-                showNotification("Authentication failed.", "error");
-            }
-        }
+        // onAuthStateChanged is bypassed to directly open the app.
         
-        logoutButton.addEventListener('click', () => signOut(auth));
-
         // --- Rendering Logic ---
         function renderLoginForm() {
             authContainer.innerHTML = `
