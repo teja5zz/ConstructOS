@@ -38,7 +38,7 @@
             padding: 0.75rem 1rem;
             border: 1px solid #D1D5DB;
             border-radius: 0.5rem;
-            transition: border-color: 0.2s, box-shadow 0.2s;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
         .input-field:focus {
             outline: none;
@@ -218,7 +218,15 @@
 
         // --- App Configuration ---
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'constructos-mvp';
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const firebaseConfig = {
+            apiKey: "AIzaSyCecaWgVVhxYPdRoZsWwRfQVWS6a-usF1Q",
+            authDomain: "constructos-5e87d.firebaseapp.com",
+            projectId: "constructos-5e87d",
+            storageBucket: "constructos-5e87d.appspot.com",
+            messagingSenderId: "154827822699",
+            appId: "1:154827822699:web:ec951c45e35cc3c410832e",
+            measurementId: "G-MBGWJBZB7E"
+        };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
@@ -256,7 +264,7 @@
 
         // --- Authentication Logic ---
         onAuthStateChanged(auth, async (user) => {
-            if (user) {
+            if (user && !user.isAnonymous) {
                 currentUser = user;
                 const userDocRef = doc(db, `/artifacts/${appId}/users/${user.uid}/userData/profile`);
                 const userDoc = await getDoc(userDocRef);
@@ -278,15 +286,15 @@
         });
 
         async function handleInitialAuth() {
+            // This function is now primarily for handling special auth tokens in certain environments.
+            // The onAuthStateChanged listener will handle the initial user state for regular web deployment.
             try {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    // Fallback for environments without a custom token
                 }
             } catch (error) {
-                console.error("Initial auth failed:", error);
-                showNotification("Authentication failed. Please try again later.", "error");
+                console.error("Initial auth token failed:", error);
+                showNotification("Authentication failed.", "error");
             }
         }
         
@@ -479,10 +487,16 @@
             container.innerHTML = `
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-xl font-bold">Payroll - ${new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}</h2>
+                    <button id="add-employee-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        Add Employee
+                    </button>
                 </div>
                 <div id="payroll-list" class="space-y-3">Loading employees...</div>
             `;
             
+            document.getElementById('add-employee-btn').addEventListener('click', () => renderAddPartyModal(true));
+
             const listEl = document.getElementById('payroll-list');
             const masterPartiesPath = `/artifacts/${appId}/users/${currentUser.uid}/parties`;
             const payrollPath = `/artifacts/${appId}/users/${currentUser.uid}/payroll_transactions`;
@@ -614,6 +628,36 @@
                 });
             });
             currentUnsubscribes.push(unsub);
+        }
+        
+        function renderAddMaterialModal(isMaster = false, projectId = null) {
+            modalContainer.innerHTML = `
+                <div class="modal"><div class="modal-content">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Add New Material</h3>
+                    <form id="add-material-form" class="space-y-4">
+                        <input type="text" id="material-name" placeholder="Material Name (e.g., Cement)" class="input-field" required>
+                        <input type="text" id="material-unit" placeholder="Unit (e.g., bags, tons)" class="input-field" required>
+                        <div class="pt-4 flex flex-col space-y-2">
+                            <button type="submit" class="btn-primary">Save Material</button>
+                            <button id="close-material-modal" type="button" class="w-full px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancel</button>
+                        </div>
+                    </form>
+                </div></div>
+            `;
+            modalContainer.querySelector('#close-material-modal').addEventListener('click', () => modalContainer.innerHTML = '');
+            modalContainer.querySelector('#add-material-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const name = e.target['material-name'].value;
+                const unit = e.target['material-unit'].value;
+                const materialsPath = isMaster 
+                    ? `/artifacts/${appId}/users/${currentUser.uid}/materials`
+                    : `/artifacts/${appId}/public/data/projects/${projectId}/materials`;
+                try {
+                    await addDoc(collection(db, materialsPath), { name, unit });
+                    showNotification("Material added!", "success");
+                    modalContainer.innerHTML = '';
+                } catch(error) { showNotification("Failed to add material.", "error"); }
+            });
         }
 
         async function renderMaterialDetailView(container, materialId, materialName) {
