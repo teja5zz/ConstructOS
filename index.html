@@ -33,6 +33,14 @@
         .btn-primary:hover {
             background-color: #4338ca;
         }
+        .btn-google {
+            background-color: #ffffff;
+            color: #374151;
+            border: 1px solid #D1D5DB;
+        }
+        .btn-google:hover {
+            background-color: #f9fafb;
+        }
         .input-field {
             width: 100%;
             padding: 0.75rem 1rem;
@@ -144,14 +152,26 @@
         .transaction-type-btn:hover {
             background-color: #e5e7eb;
         }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border-left-color: #4f46e5;
+            animation: spin 1s ease infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body class="antialiased">
 
     <!-- Main Application Container -->
     <div id="app-container">
-        <!-- Auth Screen (now hidden) -->
-        <div id="auth-screen" class="min-h-screen flex items-center justify-center bg-gray-50 px-4 hidden">
+        <!-- Auth Screen -->
+        <div id="auth-screen" class="min-h-screen flex items-center justify-center bg-gray-50 px-4">
             <div class="max-w-md w-full">
                 <div class="text-center mb-8">
                     <h1 class="text-4xl font-bold text-gray-800"><span class="text-indigo-600">Construct</span>OS</h1>
@@ -163,8 +183,8 @@
             </div>
         </div>
 
-        <!-- Main App Screen (now visible by default) -->
-        <div id="main-app">
+        <!-- Main App Screen (hidden by default) -->
+        <div id="main-app" class="hidden">
             <header class="bg-white shadow-sm sticky top-0 z-40">
                 <nav class="container mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center">
                     <div class="text-2xl font-bold text-gray-800">
@@ -172,7 +192,7 @@
                     </div>
                     <div class="flex items-center space-x-4">
                         <span id="user-email" class="text-sm text-gray-600 hidden sm:block"></span>
-                        <button id="logout-button" class="text-sm font-medium text-indigo-600 hover:text-indigo-800 hidden">Logout</button>
+                        <button id="logout-button" class="text-sm font-medium text-indigo-600 hover:text-indigo-800">Logout</button>
                     </div>
                 </nav>
             </header>
@@ -198,7 +218,8 @@
             createUserWithEmailAndPassword, 
             signInWithEmailAndPassword, 
             signOut,
-            signInWithCustomToken,
+            signInWithPopup,
+            GoogleAuthProvider,
             signInAnonymously
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { 
@@ -262,19 +283,68 @@
             }, 3000);
         }
 
+        // --- Gemini API Helper ---
+        async function callGemini(prompt, retries = 3, delay = 1000) {
+            let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+            const payload = { contents: chatHistory };
+            const apiKey = ""; // API key is handled by the environment
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        return result.candidates[0].content.parts[0].text;
+                    } else {
+                        throw new Error("Invalid response structure from Gemini API");
+                    }
+                } catch (error) {
+                    console.error(`Attempt ${i + 1} failed:`, error);
+                    if (i < retries - 1) {
+                        await new Promise(res => setTimeout(res, delay));
+                        delay *= 2; // Exponential backoff
+                    } else {
+                        return "Error: Could not get a response from the AI. Please try again.";
+                    }
+                }
+            }
+        }
+
         // --- Authentication Logic ---
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
-                // For anonymous users, we can assign a default role or leave it null
-                currentUserRole = 'Admin'; 
-                userEmailSpan.textContent = user.isAnonymous ? 'Anonymous User' : user.email;
-                
+                const userDocRef = doc(db, `/artifacts/${appId}/users/${user.uid}/userData/profile`);
+                const userDoc = await getDoc(userDocRef);
+                if (userDoc.exists()) {
+                    currentUserRole = userDoc.data().role;
+                } else {
+                    // Create a profile for new Google sign-in users
+                    currentUserRole = 'Project Manager'; // Default role
+                    await setDoc(userDocRef, {
+                        email: user.email,
+                        role: currentUserRole,
+                        createdAt: serverTimestamp()
+                    });
+                }
+                userEmailSpan.textContent = `${user.email} (${currentUserRole})`;
                 authScreen.classList.add('hidden');
                 mainApp.classList.remove('hidden');
                 renderDashboard();
             } else {
-                // This block will now only run if a user signs out, which is hidden.
                 currentUser = null;
                 currentUserRole = null;
                 clearSubscriptions();
@@ -283,15 +353,10 @@
                 renderLoginForm();
             }
         });
-
+        
         async function handleInitialAuth() {
-            try {
-                if (auth.currentUser) return; // If already signed in, do nothing
-                await signInAnonymously(auth);
-            } catch (error) {
-                console.error("Anonymous auth failed:", error);
-                showNotification("Could not connect to the server. Please check your connection.", "error");
-            }
+            // This function is primarily for handling special auth tokens in certain environments.
+            // For standard web deployment, onAuthStateChanged handles the initial user state.
         }
         
         logoutButton.addEventListener('click', () => signOut(auth));
@@ -305,6 +370,15 @@
                     <input type="password" id="login-password" placeholder="Password" class="input-field" required>
                     <button type="submit" class="btn-primary">Log In</button>
                 </form>
+                <div class="my-4 flex items-center">
+                    <div class="flex-grow border-t border-gray-300"></div>
+                    <span class="flex-shrink mx-4 text-gray-500">or</span>
+                    <div class="flex-grow border-t border-gray-300"></div>
+                </div>
+                <button id="google-signin-btn" class="btn-primary btn-google flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C12.955 4 4 12.955 4 24s8.955 20 20 20s20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"></path><path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C16.318 4 9.656 8.337 6.306 14.691z"></path><path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.222 0-9.618-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"></path><path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-.792 2.237-2.231 4.166-4.087 5.571l6.19 5.238C42.021 35.596 44 30.138 44 24c0-1.341-.138-2.65-.389-3.917z"></path></svg>
+                    Sign in with Google
+                </button>
                 <p class="text-center text-sm mt-6">
                     Don't have an account? <a href="#" id="show-register" class="font-medium text-indigo-600 hover:underline">Sign up</a>
                 </p>
@@ -320,6 +394,14 @@
             document.getElementById('show-register').addEventListener('click', (e) => {
                 e.preventDefault();
                 renderRegisterForm();
+            });
+            document.getElementById('google-signin-btn').addEventListener('click', async () => {
+                try {
+                    const provider = new GoogleAuthProvider();
+                    await signInWithPopup(auth, provider);
+                } catch (error) {
+                    showNotification(error.message, "error");
+                }
             });
         }
 
