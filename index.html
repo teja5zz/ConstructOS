@@ -1,89 +1,2329 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Welcome to Firebase Hosting</title>
-
-    <!-- update the version number as needed -->
-    <script defer src="/__/firebase/12.0.0/firebase-app-compat.js"></script>
-    <!-- include only the Firebase features as you need -->
-    <script defer src="/__/firebase/12.0.0/firebase-auth-compat.js"></script>
-    <script defer src="/__/firebase/12.0.0/firebase-database-compat.js"></script>
-    <script defer src="/__/firebase/12.0.0/firebase-firestore-compat.js"></script>
-    <script defer src="/__/firebase/12.0.0/firebase-functions-compat.js"></script>
-    <script defer src="/__/firebase/12.0.0/firebase-messaging-compat.js"></script>
-    <script defer src="/__/firebase/12.0.0/firebase-storage-compat.js"></script>
-    <script defer src="/__/firebase/12.0.0/firebase-analytics-compat.js"></script>
-    <script defer src="/__/firebase/12.0.0/firebase-remote-config-compat.js"></script>
-    <script defer src="/__/firebase/12.0.0/firebase-performance-compat.js"></script>
-    <!-- 
-      initialize the SDK after all desired features are loaded, set useEmulator to false
-      to avoid connecting the SDK to running emulators.
-    -->
-    <script defer src="/__/firebase/init.js?useEmulator=true"></script>
-
-    <style media="screen">
-      body { background: #ECEFF1; color: rgba(0,0,0,0.87); font-family: Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; }
-      #message { background: white; max-width: 360px; margin: 100px auto 16px; padding: 32px 24px; border-radius: 3px; }
-      #message h2 { color: #ffa100; font-weight: bold; font-size: 16px; margin: 0 0 8px; }
-      #message h1 { font-size: 22px; font-weight: 300; color: rgba(0,0,0,0.6); margin: 0 0 16px;}
-      #message p { line-height: 140%; margin: 16px 0 24px; font-size: 14px; }
-      #message a { display: block; text-align: center; background: #039be5; text-transform: uppercase; text-decoration: none; color: white; padding: 16px; border-radius: 4px; }
-      #message, #message a { box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); }
-      #load { color: rgba(0,0,0,0.4); text-align: center; font-size: 13px; }
-      @media (max-width: 600px) {
-        body, #message { margin-top: 0; background: white; box-shadow: none; }
-        body { border-top: 16px solid #ffa100; }
-      }
-    </style>
-  </head>
-  <body>
-    <div id="message">
-      <h2>Welcome</h2>
-      <h1>Firebase Hosting Setup Complete</h1>
-      <p>You're seeing this because you've successfully setup Firebase Hosting. Now it's time to go build something extraordinary!</p>
-      <a target="_blank" href="https://firebase.google.com/docs/hosting/">Open Hosting Documentation</a>
-    </div>
-    <p id="load">Firebase SDK Loading&hellip;</p>
-
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const loadEl = document.querySelector('#load');
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
-        // // The Firebase SDK is initialized and available here!
-        //
-        // firebase.auth().onAuthStateChanged(user => { });
-        // firebase.database().ref('/path/to/ref').on('value', snapshot => { });
-        // firebase.firestore().doc('/foo/bar').get().then(() => { });
-        // firebase.functions().httpsCallable('yourFunction')().then(() => { });
-        // firebase.messaging().requestPermission().then(() => { });
-        // firebase.storage().ref('/path/to/ref').getDownloadURL().then(() => { });
-        // firebase.analytics(); // call to activate
-        // firebase.analytics().logEvent('tutorial_completed');
-        // firebase.performance(); // call to activate
-        //
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
-
-        try {
-          let app = firebase.app();
-          let features = [
-            'auth', 
-            'database', 
-            'firestore',
-            'functions',
-            'messaging', 
-            'storage', 
-            'analytics', 
-            'remoteConfig',
-            'performance',
-          ].filter(feature => typeof app[feature] === 'function');
-          loadEl.textContent = `Firebase SDK loaded with ${features.join(', ')}`;
-        } catch (e) {
-          console.error(e);
-          loadEl.textContent = 'Error loading the Firebase SDK, check the console.';
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ConstructOS - Integrated Construction Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d1d5db' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            color: #374151;
         }
-      });
+        .auth-card {
+            background-color: #FFFFFF;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            padding: 2.5rem;
+        }
+        .btn-primary {
+            background-color: #4f46e5;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: background-color: 0.3s ease;
+            width: 100%;
+        }
+        .btn-primary:hover {
+            background-color: #4338ca;
+        }
+        .input-field {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #D1D5DB;
+            border-radius: 0.5rem;
+            transition: border-color: 0.2s, box-shadow 0.2s;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.5);
+        }
+        .input-field:disabled {
+            background-color: #f9fafb;
+            color: #6b7280;
+        }
+        .card {
+            background-color: #FFFFFF;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+        }
+        .tab {
+            cursor: pointer;
+            padding: 0.75rem 1rem;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            color: #6B7280;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .tab.active {
+            color: #4f46e5;
+            border-bottom-color: #4f46e5;
+            font-weight: 600;
+        }
+        .sub-tab {
+            padding: 0.5rem 1rem;
+            border: 1px solid #D1D5DB;
+            color: #6B7280;
+            background-color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .sub-tab:first-child { border-radius: 0.5rem 0 0 0.5rem; }
+        .sub-tab:last-child { border-radius: 0 0.5rem 0.5rem 0; }
+        .sub-tab.active {
+            background-color: #e0e7ff;
+            color: #3730a3;
+            border-color: #a5b4fc;
+            font-weight: 600;
+        }
+        #notification {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            color: white;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s, visibility 0.5s;
+        }
+        #notification.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .bg-success { background-color: #10B981; }
+        .bg-error { background-color: #EF4444; }
+        .modal {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0,0,0,0.5);
+            overflow-y: auto;
+            height: 100%;
+            width: 100%;
+            z-index: 50;
+        }
+        .modal-content {
+            position: relative;
+            top: 5rem;
+            margin: auto;
+            padding: 1.25rem;
+            border-width: 1px;
+            width: 100%;
+            max-width: 28rem;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            border-radius: 0.375rem;
+            background-color: white;
+        }
+        .transaction-type-btn {
+            background-color: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            color: #374151;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            text-align: center;
+            transition: background-color: 0.2s;
+        }
+        .transaction-type-btn:hover {
+            background-color: #e5e7eb;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Main Application Container -->
+    <div id="app-container">
+        <!-- Auth Screen -->
+        <div id="auth-screen" class="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+            <div class="max-w-md w-full">
+                <div class="text-center mb-8">
+                    <h1 class="text-4xl font-bold text-gray-800"><span class="text-indigo-600">Construct</span>OS</h1>
+                    <p class="text-gray-500 mt-2">Integrated Construction Management</p>
+                </div>
+                <div id="auth-container" class="auth-card">
+                    <!-- Login/Register forms will be injected here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Main App Screen (hidden by default) -->
+        <div id="main-app" class="hidden">
+            <header class="bg-white shadow-sm sticky top-0 z-40">
+                <nav class="container mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center">
+                    <div class="text-2xl font-bold text-gray-800">
+                        <span class="text-indigo-600">Construct</span>OS
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <span id="user-email" class="text-sm text-gray-600 hidden sm:block"></span>
+                        <button id="logout-button" class="text-sm font-medium text-indigo-600 hover:text-indigo-800">Logout</button>
+                    </div>
+                </nav>
+            </header>
+            
+            <main id="app-content" class="container mx-auto p-4 sm:p-6 lg:p-8">
+                <!-- Content (Dashboard or Project View) will be injected here -->
+            </main>
+        </div>
+    </div>
+    
+    <!-- Modal Container -->
+    <div id="modal-container"></div>
+
+    <!-- Notification Element -->
+    <div id="notification"></div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { 
+            getAuth, 
+            onAuthStateChanged, 
+            createUserWithEmailAndPassword, 
+            signInWithEmailAndPassword, 
+            signOut,
+            signInWithCustomToken,
+            signInAnonymously
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, 
+            doc, 
+            setDoc, 
+            getDoc, 
+            addDoc, 
+            collection, 
+            query, 
+            where, 
+            onSnapshot,
+            serverTimestamp,
+            getDocs,
+            updateDoc
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- App Configuration ---
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'constructos-mvp';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // --- State Management ---
+        let currentUser = null;
+        let currentUserRole = null;
+        let currentUnsubscribes = [];
+        let siteTabDate = new Date();
+
+        // --- UI Elements ---
+        const authScreen = document.getElementById('auth-screen');
+        const mainApp = document.getElementById('main-app');
+        const authContainer = document.getElementById('auth-container');
+        const appContent = document.getElementById('app-content');
+        const userEmailSpan = document.getElementById('user-email');
+        const logoutButton = document.getElementById('logout-button');
+        const notification = document.getElementById('notification');
+        const modalContainer = document.getElementById('modal-container');
+        
+        // --- Helper Functions ---
+        function clearSubscriptions() {
+            currentUnsubscribes.forEach(unsub => unsub());
+            currentUnsubscribes = [];
+        }
+
+        function showNotification(message, type = 'success') {
+            notification.textContent = message;
+            notification.className = type === 'success' ? 'bg-success' : 'bg-error';
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // --- Authentication Logic ---
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                const userDocRef = doc(db, `/artifacts/${appId}/users/${user.uid}/userData/profile`);
+                const userDoc = await getDoc(userDocRef);
+                if (userDoc.exists()) {
+                    currentUserRole = userDoc.data().role;
+                    userEmailSpan.textContent = `${user.email} (${currentUserRole})`;
+                }
+                authScreen.classList.add('hidden');
+                mainApp.classList.remove('hidden');
+                renderDashboard();
+            } else {
+                currentUser = null;
+                currentUserRole = null;
+                clearSubscriptions();
+                authScreen.classList.remove('hidden');
+                mainApp.classList.add('hidden');
+                renderLoginForm();
+            }
+        });
+
+        async function handleInitialAuth() {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    // Fallback for environments without a custom token
+                }
+            } catch (error) {
+                console.error("Initial auth failed:", error);
+                showNotification("Authentication failed. Please try again later.", "error");
+            }
+        }
+        
+        logoutButton.addEventListener('click', () => signOut(auth));
+
+        // --- Rendering Logic ---
+        function renderLoginForm() {
+            authContainer.innerHTML = `
+                <h2 class="text-xl font-bold text-center mb-6">Log In</h2>
+                <form id="login-form" class="space-y-4">
+                    <input type="email" id="login-email" placeholder="Email" class="input-field" required>
+                    <input type="password" id="login-password" placeholder="Password" class="input-field" required>
+                    <button type="submit" class="btn-primary">Log In</button>
+                </form>
+                <p class="text-center text-sm mt-6">
+                    Don't have an account? <a href="#" id="show-register" class="font-medium text-indigo-600 hover:underline">Sign up</a>
+                </p>
+            `;
+            document.getElementById('login-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                try {
+                    await signInWithEmailAndPassword(auth, e.target['login-email'].value, e.target['login-password'].value);
+                } catch (error) {
+                    showNotification(error.message, "error");
+                }
+            });
+            document.getElementById('show-register').addEventListener('click', (e) => {
+                e.preventDefault();
+                renderRegisterForm();
+            });
+        }
+
+        function renderRegisterForm() {
+            authContainer.innerHTML = `
+                <h2 class="text-xl font-bold text-center mb-6">Create Account</h2>
+                <form id="register-form" class="space-y-4">
+                    <input type="email" id="register-email" placeholder="Email" class="input-field" required>
+                    <input type="password" id="register-password" placeholder="Password (min. 6 characters)" class="input-field" required>
+                    <select id="register-role" class="input-field" required>
+                        <option value="" disabled selected>Select your role...</option>
+                        <option value="Admin">Company Admin</option>
+                        <option value="Project Manager">Project Manager</option>
+                        <option value="Site Supervisor">Site Supervisor</option>
+                    </select>
+                    <button type="submit" class="btn-primary">Sign Up</button>
+                </form>
+                <p class="text-center text-sm mt-6">
+                    Already have an account? <a href="#" id="show-login" class="font-medium text-indigo-600 hover:underline">Log in</a>
+                </p>
+            `;
+            document.getElementById('register-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = e.target['register-email'].value;
+                const password = e.target['register-password'].value;
+                const role = e.target['register-role'].value;
+                try {
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    const userProfilePath = `/artifacts/${appId}/users/${userCredential.user.uid}/userData/profile`;
+                    await setDoc(doc(db, userProfilePath), {
+                        email: email,
+                        role: role,
+                        createdAt: serverTimestamp()
+                    });
+                    showNotification("Account created successfully!", "success");
+                } catch (error) {
+                    showNotification(error.message, "error");
+                }
+            });
+            document.getElementById('show-login').addEventListener('click', (e) => {
+                e.preventDefault();
+                renderLoginForm();
+            });
+        }
+
+        function renderDashboard() {
+            clearSubscriptions();
+            appContent.innerHTML = `
+                <div class="flex border-b border-gray-200 mb-6 flex-wrap">
+                    <button class="tab active" data-tab="activity"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Activity</button>
+                    <button class="tab" data-tab="approvals"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9c0-1-1.2-3.2-2-5-1.2 2.3-2 4.3-2 5V22h4V9Z"/><path d="M12 14v8"/><path d="M10 22h4"/><path d="M12 4a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/></svg>Approvals</button>
+                    <button class="tab" data-tab="all-parties"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>All Parties</button>
+                    <button class="tab" data-tab="materials"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>Materials</button>
+                    <button class="tab" data-tab="finances"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Finances</button>
+                    <button class="tab" data-tab="payroll"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Payroll</button>
+                    <button class="tab" data-tab="projects"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/></svg>My Projects</button>
+                    <button class="tab" data-tab="profile"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profile</button>
+                </div>
+                <div id="dashboard-tab-content"></div>
+            `;
+            
+            const tabs = appContent.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', (e) => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    e.currentTarget.classList.add('active');
+                    renderDashboardTabContent(e.currentTarget.dataset.tab);
+                });
+            });
+            renderDashboardTabContent('activity');
+        }
+
+        function renderDashboardTabContent(tabName) {
+            clearSubscriptions();
+            const container = document.getElementById('dashboard-tab-content');
+            if (tabName === 'activity') {
+                renderActivityFeed(container);
+            } else if (tabName === 'approvals') {
+                renderApprovals(container);
+            } else if (tabName === 'all-parties') {
+                renderAllPartiesTab(container);
+            } else if (tabName === 'materials') {
+                renderMasterMaterialsTab(container);
+            } else if (tabName === 'finances') {
+                renderFinancesTab(container);
+            } else if (tabName === 'payroll') {
+                renderPayrollTab(container);
+            } else if (tabName === 'projects') {
+                renderProjectsList(container);
+            } else if (tabName === 'profile') {
+                renderProfileTab(container);
+            }
+        }
+
+        function renderProfileTab(container) {
+            container.innerHTML = `
+                <div class="max-w-2xl mx-auto">
+                    <div class="card p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-2xl font-bold">Company Profile</h2>
+                            <button id="edit-profile-btn" class="text-sm font-medium text-indigo-600 hover:underline">Edit</button>
+                        </div>
+                        <form id="profile-form" class="space-y-4">
+                            <div><label class="block text-sm font-medium text-gray-700">Company Name</label><input type="text" id="company-name" class="input-field mt-1" disabled></div>
+                            <div><label class="block text-sm font-medium text-gray-700">GST Number</label><input type="text" id="company-gst" class="input-field mt-1" disabled></div>
+                            <div><label class="block text-sm font-medium text-gray-700">Phone Number</label><input type="text" id="company-phone" class="input-field mt-1" disabled></div>
+                            <div><label class="block text-sm font-medium text-gray-700">Address</label><textarea id="company-address" class="input-field mt-1 h-24" disabled></textarea></div>
+                            <div id="profile-actions" class="hidden pt-4">
+                                <button type="submit" class="btn-primary">Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            `;
+
+            const profileForm = document.getElementById('profile-form');
+            const editBtn = document.getElementById('edit-profile-btn');
+            const actionsDiv = document.getElementById('profile-actions');
+            const inputs = profileForm.querySelectorAll('input, textarea');
+
+            const profilePath = `/artifacts/${appId}/users/${currentUser.uid}/company_profile/details`;
+            const docRef = doc(db, profilePath);
+
+            getDoc(docRef).then(docSnap => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    document.getElementById('company-name').value = data.name || '';
+                    document.getElementById('company-gst').value = data.gst || '';
+                    document.getElementById('company-phone').value = data.phone || '';
+                    document.getElementById('company-address').value = data.address || '';
+                }
+            });
+
+            editBtn.addEventListener('click', () => {
+                inputs.forEach(input => input.disabled = false);
+                actionsDiv.classList.remove('hidden');
+                editBtn.classList.add('hidden');
+            });
+
+            profileForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const profileData = {
+                    name: document.getElementById('company-name').value,
+                    gst: document.getElementById('company-gst').value,
+                    phone: document.getElementById('company-phone').value,
+                    address: document.getElementById('company-address').value,
+                };
+                try {
+                    await setDoc(docRef, profileData, { merge: true });
+                    showNotification("Profile updated successfully!", "success");
+                    inputs.forEach(input => input.disabled = true);
+                    actionsDiv.classList.add('hidden');
+                    editBtn.classList.remove('hidden');
+                } catch (error) {
+                    showNotification("Failed to update profile.", "error");
+                }
+            });
+        }
+
+        async function renderPayrollTab(container) {
+            container.innerHTML = `
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold">Payroll - ${new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}</h2>
+                </div>
+                <div id="payroll-list" class="space-y-3">Loading employees...</div>
+            `;
+            
+            const listEl = document.getElementById('payroll-list');
+            const masterPartiesPath = `/artifacts/${appId}/users/${currentUser.uid}/parties`;
+            const payrollPath = `/artifacts/${appId}/users/${currentUser.uid}/payroll_transactions`;
+            const currentMonth = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
+
+            const partiesQuery = query(collection(db, masterPartiesPath), where("role", "in", ["Worker", "Employee", "Staff"]));
+            const payrollQuery = query(collection(db, payrollPath), where("month", "==", currentMonth));
+
+            const [partiesSnap, payrollSnap] = await Promise.all([getDocs(partiesQuery), getDocs(payrollQuery)]);
+            
+            const paidEmployees = payrollSnap.docs.map(doc => doc.data().partyId);
+
+            if (partiesSnap.empty) {
+                listEl.innerHTML = `<div class="card p-6 text-center text-gray-500">No employees found in your master party list.</div>`;
+                return;
+            }
+
+            listEl.innerHTML = partiesSnap.docs.map(doc => {
+                const isPaid = paidEmployees.includes(doc.id);
+                return `
+                    <div class="card p-4 flex justify-between items-center">
+                        <div><p class="font-semibold text-lg">${doc.data().name}</p><p class="text-sm text-gray-500">${doc.data().role}</p></div>
+                        ${isPaid ? `<span class="text-green-600 font-bold">Paid</span>` : `<button class="btn-pay bg-green-500 text-white text-sm px-3 py-1 rounded" data-party-id="${doc.id}" data-party-name="${doc.data().name}">Record Payment</button>`}
+                    </div>
+                `;
+            }).join('');
+
+            listEl.querySelectorAll('.btn-pay').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const { partyId, partyName } = e.currentTarget.dataset;
+                    renderRecordPayrollModal(partyId, partyName, currentMonth);
+                });
+            });
+        }
+
+        async function renderRecordPayrollModal(partyId, partyName, month) {
+            const projectsCollectionPath = `/artifacts/${appId}/public/data/projects`;
+            const projectsQuery = query(collection(db, projectsCollectionPath), where("members", "array-contains", currentUser.uid));
+            const projectsSnapshot = await getDocs(projectsQuery);
+            const projectOptions = projectsSnapshot.docs.map(doc => `<option value="${doc.id}" data-name="${doc.data().name}">${doc.data().name}</option>`).join('');
+
+            modalContainer.innerHTML = `
+                <div class="modal"><div class="modal-content">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Pay Salary to ${partyName}</h3>
+                    <form id="payroll-form" class="space-y-4">
+                        <select id="payroll-project" class="input-field"><option value="">General Payroll (No Project)</option>${projectOptions}</select>
+                        <input type="number" id="payroll-amount" placeholder="Amount" step="0.01" class="input-field" required>
+                        <textarea id="payroll-notes" placeholder="Notes (e.g., Salary for ${month})" class="input-field h-20"></textarea>
+                        <div class="pt-4 flex flex-col space-y-2">
+                            <button type="submit" class="btn-primary">Confirm Payment</button>
+                            <button id="close-payroll-modal" type="button" class="w-full px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancel</button>
+                        </div>
+                    </form>
+                </div></div>
+            `;
+            modalContainer.querySelector('#close-payroll-modal').addEventListener('click', () => modalContainer.innerHTML = '');
+            modalContainer.querySelector('#payroll-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const amount = parseFloat(e.target['payroll-amount'].value);
+                const notes = e.target['payroll-notes'].value || `Salary for ${month}`;
+                const projectId = e.target['payroll-project'].value;
+
+                if (isNaN(amount) || amount <= 0) {
+                    showNotification("Please enter a valid amount.", "error"); return;
+                }
+                const payrollPath = `/artifacts/${appId}/users/${currentUser.uid}/payroll_transactions`;
+                try {
+                    await addDoc(collection(db, payrollPath), {
+                        partyId, partyName, amount, notes, month, projectId: projectId || null,
+                        type: 'out',
+                        status: 'approved',
+                        authorId: currentUser.uid,
+                        createdAt: serverTimestamp()
+                    });
+
+                    if (projectId) {
+                        const projectTransactionsPath = `/artifacts/${appId}/public/data/projects/${projectId}/transactions`;
+                        await addDoc(collection(db, projectTransactionsPath), {
+                            type: 'out',
+                            party: partyName,
+                            amount: amount,
+                            description: `Payroll: ${notes}`,
+                            method: 'Salary',
+                            status: 'approved',
+                            authorId: currentUser.uid,
+                            createdAt: serverTimestamp()
+                        });
+                    }
+
+                    showNotification("Payroll payment recorded!", "success");
+                    modalContainer.innerHTML = '';
+                    renderDashboardTabContent('payroll'); // Refresh tab
+                } catch(error) { showNotification("Failed to record payment.", "error"); }
+            });
+        }
+
+        function renderMasterMaterialsTab(container) {
+             container.innerHTML = `
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold">Master Material Library</h2>
+                    <button id="add-master-material-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        Add Material
+                    </button>
+                </div>
+                <div id="master-materials-list" class="space-y-3">Loading...</div>
+            `;
+            document.getElementById('add-master-material-btn').addEventListener('click', () => renderAddMaterialModal(true));
+
+            const listEl = document.getElementById('master-materials-list');
+            const masterMaterialsPath = `/artifacts/${appId}/users/${currentUser.uid}/materials`;
+            const q = query(collection(db, masterMaterialsPath));
+            const unsub = onSnapshot(q, (snapshot) => {
+                if (snapshot.empty) {
+                    listEl.innerHTML = `<div class="card p-6 text-center text-gray-500">No master materials defined yet.</div>`;
+                    return;
+                }
+                listEl.innerHTML = snapshot.docs.map(doc => `
+                    <div class="card p-4 flex justify-between items-center cursor-pointer" data-material-id="${doc.id}" data-material-name="${doc.data().name}">
+                        <div><p class="font-semibold text-lg">${doc.data().name}</p><p class="text-sm text-gray-500">${doc.data().unit}</p></div>
+                    </div>
+                `).join('');
+                listEl.querySelectorAll('.card').forEach(card => {
+                    card.addEventListener('click', (e) => {
+                        const materialId = e.currentTarget.dataset.materialId;
+                        const materialName = e.currentTarget.dataset.materialName;
+                        renderMaterialDetailView(container, materialId, materialName);
+                    });
+                });
+            });
+            currentUnsubscribes.push(unsub);
+        }
+
+        async function renderMaterialDetailView(container, materialId, materialName) {
+            container.innerHTML = `
+                <div class="mb-4">
+                    <a href="#" id="back-to-materials" class="text-indigo-600 hover:underline">&larr; Back to Master List</a>
+                    <h2 class="text-3xl font-bold mt-2">${materialName}</h2>
+                </div>
+                <div id="material-summary" class="space-y-4">Loading summary...</div>
+            `;
+            document.getElementById('back-to-materials').addEventListener('click', (e) => {
+                e.preventDefault();
+                renderMasterMaterialsTab(container);
+            });
+
+            const summaryEl = document.getElementById('material-summary');
+            const projectsPath = `/artifacts/${appId}/public/data/projects`;
+            const projectsQuery = query(collection(db, projectsPath), where("members", "array-contains", currentUser.uid));
+            const projectsSnapshot = await getDocs(projectsQuery);
+
+            let usageByProject = {};
+
+            for (const projectDoc of projectsSnapshot.docs) {
+                const projectId = projectDoc.id;
+                const projectName = projectDoc.data().name;
+                const movementsPath = `/artifacts/${appId}/public/data/projects/${projectId}/material_movements`;
+                const movementsQuery = query(collection(db, movementsPath));
+                const movementsSnapshot = await getDocs(movementsQuery);
+
+                if (!movementsSnapshot.empty) {
+                    movementsSnapshot.forEach(moveDoc => {
+                        const move = moveDoc.data();
+                        move.items.forEach(item => {
+                            if (item.name === materialName) {
+                                if (!usageByProject[projectName]) {
+                                    usageByProject[projectName] = { received: 0, used: 0 };
+                                }
+                                const quantity = parseFloat(item.quantity) || 0;
+                                if (move.type === 'received') {
+                                    usageByProject[projectName].received += quantity;
+                                } else if (move.type === 'used') {
+                                    usageByProject[projectName].used += quantity;
+                                }
+                            }
+                        });
+                    });
+                }
+            }
+
+            if (Object.keys(usageByProject).length === 0) {
+                summaryEl.innerHTML = `<div class="card p-6 text-center text-gray-500">This material has not been used in any project.</div>`;
+                return;
+            }
+
+            summaryEl.innerHTML = Object.entries(usageByProject).map(([projectName, data]) => `
+                <div class="card p-4">
+                    <h4 class="font-bold text-lg">${projectName}</h4>
+                    <div class="flex justify-between mt-2">
+                        <p>Total Received:</p><p class="text-green-600 font-semibold">${data.received}</p>
+                    </div>
+                    <div class="flex justify-between">
+                        <p>Total Used:</p><p class="text-red-600 font-semibold">${data.used}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderAllPartiesTab(container) {
+            container.innerHTML = `
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold">All Parties</h2>
+                    <button id="add-master-party-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2">
+                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        Add Party
+                    </button>
+                </div>
+                <div id="master-parties-list" class="space-y-3">Loading...</div>
+            `;
+            document.getElementById('add-master-party-btn').addEventListener('click', () => renderAddPartyModal(true));
+
+            const masterPartiesListEl = document.getElementById('master-parties-list');
+            const masterPartiesPath = `/artifacts/${appId}/users/${currentUser.uid}/parties`;
+            const q = query(collection(db, masterPartiesPath));
+            const unsub = onSnapshot(q, (snapshot) => {
+                if (snapshot.empty) {
+                    masterPartiesListEl.innerHTML = `<div class="card p-6 text-center text-gray-500">No parties added yet.</div>`;
+                    return;
+                }
+                masterPartiesListEl.innerHTML = snapshot.docs.map(doc => `
+                    <div class="card p-4 flex justify-between items-center cursor-pointer" data-party-id="${doc.id}" data-party-name="${doc.data().name}">
+                        <div><p class="font-semibold text-lg">${doc.data().name}</p><p class="text-sm text-gray-500">${doc.data().role}</p></div>
+                    </div>
+                `).join('');
+                masterPartiesListEl.querySelectorAll('.card').forEach(card => {
+                    card.addEventListener('click', (e) => {
+                        const partyId = e.currentTarget.dataset.partyId;
+                        const partyName = e.currentTarget.dataset.partyName;
+                        renderPartyDetailView(container, partyId, partyName);
+                    });
+                });
+            });
+            currentUnsubscribes.push(unsub);
+        }
+
+        async function renderPartyDetailView(container, partyId, partyName) {
+            container.innerHTML = `
+                <div class="mb-4">
+                    <a href="#" id="back-to-parties" class="text-indigo-600 hover:underline">&larr; Back to All Parties</a>
+                    <h2 class="text-3xl font-bold mt-2">${partyName}</h2>
+                </div>
+                <div id="party-financial-summary" class="space-y-4">Loading financial summary...</div>
+            `;
+            document.getElementById('back-to-parties').addEventListener('click', (e) => {
+                e.preventDefault();
+                renderAllPartiesTab(container);
+            });
+
+            const summaryEl = document.getElementById('party-financial-summary');
+            const projectsPath = `/artifacts/${appId}/public/data/projects`;
+            const projectsQuery = query(collection(db, projectsPath), where("members", "array-contains", currentUser.uid));
+            const projectsSnapshot = await getDocs(projectsQuery);
+
+            let financialDataByProject = {};
+            
+            for (const projectDoc of projectsSnapshot.docs) {
+                const projectId = projectDoc.id;
+                const projectName = projectDoc.data().name;
+                const transactionsPath = `/artifacts/${appId}/public/data/projects/${projectId}/transactions`;
+                const transactionsQuery = query(collection(db, transactionsPath), where("party", "==", partyName));
+                const transactionsSnapshot = await getDocs(transactionsQuery);
+
+                if (!transactionsSnapshot.empty) {
+                    financialDataByProject[projectName] = { totalIn: 0, totalOut: 0 };
+                    transactionsSnapshot.forEach(txDoc => {
+                        const tx = txDoc.data();
+                        const amount = parseFloat(tx.amount) || 0;
+                        if (tx.type === 'in') {
+                            financialDataByProject[projectName].totalIn += amount;
+                        } else {
+                            financialDataByProject[projectName].totalOut += amount;
+                        }
+                    });
+                }
+            }
+
+            if (Object.keys(financialDataByProject).length === 0) {
+                summaryEl.innerHTML = `<div class="card p-6 text-center text-gray-500">No transactions found for this party in any project.</div>`;
+                return;
+            }
+
+            summaryEl.innerHTML = Object.entries(financialDataByProject).map(([projectName, data]) => `
+                <div class="card p-4">
+                    <h4 class="font-bold text-lg">${projectName}</h4>
+                    <div class="flex justify-between mt-2">
+                        <p>Total Received:</p><p class="text-green-600 font-semibold">₹${data.totalIn.toFixed(2)}</p>
+                    </div>
+                    <div class="flex justify-between">
+                        <p>Total Paid:</p><p class="text-red-600 font-semibold">₹${data.totalOut.toFixed(2)}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderFinancesTab(container) {
+            container.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="card p-4 text-center"><p class="text-sm text-gray-500">TOTAL RECEIVED</p><p id="fin-total-in" class="text-2xl font-bold text-green-600">₹0.00</p></div>
+                    <div class="card p-4 text-center"><p class="text-sm text-gray-500">TOTAL ALLOCATED</p><p id="fin-total-out" class="text-2xl font-bold text-red-600">₹0.00</p></div>
+                    <div class="card p-4 text-center"><p class="text-sm text-gray-500">UNALLOCATED</p><p id="fin-balance" class="text-2xl font-bold text-gray-800">₹0.00</p></div>
+                </div>
+                <div class="flex gap-4 mb-4">
+                    <button id="record-owner-payment-btn" class="btn-primary flex-1 !bg-green-600 hover:!bg-green-700">+ Record Owner Payment</button>
+                    <button id="allocate-funds-btn" class="btn-primary flex-1 !bg-blue-600 hover:!bg-blue-700">-&gt; Allocate to Project</button>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Company Fund History</h3>
+                <div id="company-funds-list" class="space-y-3">Loading...</div>
+            `;
+
+            document.getElementById('record-owner-payment-btn').addEventListener('click', renderRecordOwnerPaymentModal);
+            document.getElementById('allocate-funds-btn').addEventListener('click', renderAllocateFundsModal);
+
+            const fundsPath = `/artifacts/${appId}/users/${currentUser.uid}/company_funds`;
+            const q = query(collection(db, fundsPath));
+            const unsub = onSnapshot(q, (snapshot) => {
+                const listEl = document.getElementById('company-funds-list');
+                const totalInEl = document.getElementById('fin-total-in');
+                const totalOutEl = document.getElementById('fin-total-out');
+                const balanceEl = document.getElementById('fin-balance');
+                
+                let totalIn = 0;
+                let totalOut = 0;
+
+                if (snapshot.empty) {
+                    listEl.innerHTML = `<div class="card p-4 text-center text-gray-500">No company funds recorded.</div>`;
+                } else {
+                    listEl.innerHTML = snapshot.docs.map(doc => {
+                        const fund = doc.data();
+                        const amount = parseFloat(fund.amount) || 0;
+                        if (fund.type === 'in') {
+                            totalIn += amount;
+                            return `<div class="card p-4 flex justify-between items-center"><p>Received from <strong>${fund.ownerName}</strong></p><p class="font-bold text-green-600">+ ₹${amount.toFixed(2)}</p></div>`;
+                        } else { // allocation
+                            totalOut += amount;
+                            return `<div class="card p-4 flex justify-between items-center"><p>Allocated to <strong>${fund.projectName}</strong></p><p class="font-bold text-red-600">- ₹${amount.toFixed(2)}</p></div>`;
+                        }
+                    }).join('');
+                }
+                totalInEl.textContent = `₹${totalIn.toFixed(2)}`;
+                totalOutEl.textContent = `₹${totalOut.toFixed(2)}`;
+                balanceEl.textContent = `₹${(totalIn - totalOut).toFixed(2)}`;
+            });
+            currentUnsubscribes.push(unsub);
+        }
+
+        function renderRecordOwnerPaymentModal() {
+            modalContainer.innerHTML = `
+                <div class="modal"><div class="modal-content">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Record Owner Payment</h3>
+                    <form id="owner-payment-form" class="space-y-4">
+                        <input type="text" id="owner-name" placeholder="Owner Name *" class="input-field" required>
+                        <input type="number" id="owner-amount" placeholder="Amount" step="0.01" class="input-field" required>
+                        <div class="pt-4 flex flex-col space-y-2">
+                            <button type="submit" class="btn-primary">Save Payment</button>
+                            <button id="close-owner-payment-modal" type="button" class="w-full px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancel</button>
+                        </div>
+                    </form>
+                </div></div>
+            `;
+            modalContainer.querySelector('#close-owner-payment-modal').addEventListener('click', () => modalContainer.innerHTML = '');
+            modalContainer.querySelector('#owner-payment-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const ownerName = e.target['owner-name'].value;
+                const amount = parseFloat(e.target['owner-amount'].value);
+                if (!ownerName || isNaN(amount) || amount <= 0) {
+                    showNotification("Please fill all fields correctly.", "error"); return;
+                }
+                const fundsPath = `/artifacts/${appId}/users/${currentUser.uid}/company_funds`;
+                try {
+                    await addDoc(collection(db, fundsPath), {
+                        type: 'in',
+                        ownerName,
+                        amount,
+                        date: new Date().toISOString().split('T')[0],
+                        createdAt: serverTimestamp()
+                    });
+                    showNotification("Payment recorded!", "success");
+                    modalContainer.innerHTML = '';
+                } catch(error) { showNotification("Failed to record payment.", "error"); }
+            });
+        }
+
+        async function renderAllocateFundsModal() {
+            const projectsCollectionPath = `/artifacts/${appId}/public/data/projects`;
+            const projectsQuery = query(collection(db, projectsCollectionPath), where("members", "array-contains", currentUser.uid));
+            const projectsSnapshot = await getDocs(projectsQuery);
+            const projectOptions = projectsSnapshot.docs.map(doc => `<option value="${doc.id}" data-name="${doc.data().name}">${doc.data().name}</option>`).join('');
+
+            modalContainer.innerHTML = `
+                <div class="modal"><div class="modal-content">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Allocate Funds to Project</h3>
+                    <form id="allocate-funds-form" class="space-y-4">
+                        <select id="alloc-project" class="input-field" required><option value="" disabled selected>Select Project *</option>${projectOptions}</select>
+                        <input type="number" id="alloc-amount" placeholder="Amount" step="0.01" class="input-field" required>
+                        <textarea id="alloc-notes" placeholder="Notes (optional)" class="input-field h-20"></textarea>
+                        <div class="pt-4 flex flex-col space-y-2">
+                            <button type="submit" class="btn-primary">Allocate</button>
+                            <button id="close-alloc-modal" type="button" class="w-full px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancel</button>
+                        </div>
+                    </form>
+                </div></div>
+            `;
+            modalContainer.querySelector('#close-alloc-modal').addEventListener('click', () => modalContainer.innerHTML = '');
+            modalContainer.querySelector('#allocate-funds-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const projectId = e.target['alloc-project'].value;
+                const selectedOption = e.target['alloc-project'].options[e.target['alloc-project'].selectedIndex];
+                const projectName = selectedOption.dataset.name;
+                const amount = parseFloat(e.target['alloc-amount'].value);
+                const notes = e.target['alloc-notes'].value;
+
+                if (!projectId || isNaN(amount) || amount <= 0) {
+                    showNotification("Please fill all fields correctly.", "error"); return;
+                }
+
+                const fundsPath = `/artifacts/${appId}/users/${currentUser.uid}/company_funds`;
+                const projectTransactionsPath = `/artifacts/${appId}/public/data/projects/${projectId}/transactions`;
+
+                try {
+                    // Record allocation from company funds
+                    await addDoc(collection(db, fundsPath), {
+                        type: 'allocation',
+                        projectId,
+                        projectName,
+                        amount,
+                        date: new Date().toISOString().split('T')[0],
+                        createdAt: serverTimestamp()
+                    });
+                    // Record as payment into project funds
+                    await addDoc(collection(db, projectTransactionsPath), {
+                        type: 'in',
+                        party: 'Company Allocation',
+                        amount: amount,
+                        description: notes || 'Funds from company wallet',
+                        method: 'Internal Transfer',
+                        status: 'approved',
+                        authorId: currentUser.uid,
+                        createdAt: serverTimestamp()
+                    });
+                    showNotification("Funds allocated successfully!", "success");
+                    modalContainer.innerHTML = '';
+                } catch(error) { showNotification("Failed to allocate funds.", "error"); }
+            });
+        }
+
+        async function renderActivityFeed(container) {
+            container.innerHTML = `<div id="activity-feed" class="space-y-4">Loading today's activity...</div>`;
+            const activityFeedEl = document.getElementById('activity-feed');
+            
+            const projectsCollectionPath = `/artifacts/${appId}/public/data/projects`;
+            const projectsQuery = query(collection(db, projectsCollectionPath), where("members", "array-contains", currentUser.uid));
+            const projectsSnapshot = await getDocs(projectsQuery);
+            
+            if (projectsSnapshot.empty) {
+                activityFeedEl.innerHTML = `<div class="card p-6 text-center text-gray-500">No projects found.</div>`;
+                return;
+            }
+
+            const todayString = new Date().toISOString().split('T')[0];
+            let allActivities = [];
+
+            for (const projectDoc of projectsSnapshot.docs) {
+                const projectName = projectDoc.data().name;
+                const logsPath = `/artifacts/${appId}/public/data/projects/${projectDoc.id}/daily_logs`;
+                const logsQuery = query(collection(db, logsPath), where("date", "==", todayString));
+                const logsSnapshot = await getDocs(logsQuery);
+                logsSnapshot.forEach(logDoc => {
+                    allActivities.push({ ...logDoc.data(), projectName });
+                });
+            }
+
+            if (allActivities.length === 0) {
+                activityFeedEl.innerHTML = `<div class="card p-6 text-center text-gray-500">No activity recorded today.</div>`;
+                return;
+            }
+
+            activityFeedEl.innerHTML = allActivities.map(act => `
+                <div class="card p-4">
+                    <p class="font-bold text-indigo-700">${act.projectName}</p>
+                    <p class="text-gray-700 whitespace-pre-wrap mt-1">${act.notes}</p>
+                    <p class="text-xs text-gray-400 mt-2">By: ${act.authorEmail}</p>
+                </div>
+            `).join('');
+        }
+        
+        async function renderApprovals(container) {
+             container.innerHTML = `
+                <div class="mb-6">
+                    <h2 class="text-xl font-bold mb-2">Material Requests</h2>
+                    <div id="material-approvals" class="space-y-3">Loading...</div>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold mb-2">Expense Approvals</h2>
+                    <div id="expense-approvals" class="space-y-3">Loading...</div>
+                </div>
+             `;
+            const materialApprovalsEl = document.getElementById('material-approvals');
+            const expenseApprovalsEl = document.getElementById('expense-approvals');
+
+            const projectsCollectionPath = `/artifacts/${appId}/public/data/projects`;
+            const projectsQuery = query(collection(db, projectsCollectionPath), where("members", "array-contains", currentUser.uid));
+            const projectsSnapshot = await getDocs(projectsQuery);
+
+            if (projectsSnapshot.empty) {
+                materialApprovalsEl.innerHTML = `<div class="card p-4 text-center text-gray-500">No projects found.</div>`;
+                expenseApprovalsEl.innerHTML = ``;
+                return;
+            }
+
+            let allRequests = [];
+            let allExpenses = [];
+
+            for (const projectDoc of projectsSnapshot.docs) {
+                const projectName = projectDoc.data().name;
+                const projectId = projectDoc.id;
+
+                const requestsPath = `/artifacts/${appId}/public/data/projects/${projectId}/material_requests`;
+                const requestsQuery = query(collection(db, requestsPath), where("status", "==", "Pending"));
+                const requestsSnapshot = await getDocs(requestsQuery);
+                requestsSnapshot.forEach(doc => allRequests.push({ ...doc.data(), id: doc.id, projectName, projectId }));
+                
+                const expensesPath = `/artifacts/${appId}/public/data/projects/${projectId}/transactions`;
+                const expensesQuery = query(collection(db, expensesPath), where("status", "==", "pending"));
+                const expensesSnapshot = await getDocs(expensesQuery);
+                expensesSnapshot.forEach(doc => allExpenses.push({ ...doc.data(), id: doc.id, projectName, projectId }));
+            }
+
+            materialApprovalsEl.innerHTML = allRequests.length > 0 ? allRequests.map(req => `
+                <div class="card p-4">
+                    <p class="font-bold text-indigo-700">${req.projectName}</p>
+                    <p>Request #${req.requestNumber} by ${req.requesterId}</p>
+                    <div class="flex gap-2 mt-2">
+                        <button class="btn-approve bg-green-500 text-white text-sm px-3 py-1 rounded" data-project-id="${req.projectId}" data-id="${req.id}" data-type="material">Approve</button>
+                        <button class="btn-reject bg-red-500 text-white text-sm px-3 py-1 rounded" data-project-id="${req.projectId}" data-id="${req.id}" data-type="material">Reject</button>
+                    </div>
+                </div>
+            `).join('') : `<div class="card p-4 text-center text-gray-500">No pending material requests.</div>`;
+            
+            expenseApprovalsEl.innerHTML = allExpenses.length > 0 ? allExpenses.map(exp => `
+                 <div class="card p-4">
+                    <p class="font-bold text-indigo-700">${exp.projectName}</p>
+                    <p>${exp.description} - ₹${exp.amount}</p>
+                    <div class="flex gap-2 mt-2">
+                        <button class="btn-approve bg-green-500 text-white text-sm px-3 py-1 rounded" data-project-id="${exp.projectId}" data-id="${exp.id}" data-type="expense">Approve</button>
+                        <button class="btn-reject bg-red-500 text-white text-sm px-3 py-1 rounded" data-project-id="${exp.projectId}" data-id="${exp.id}" data-type="expense">Reject</button>
+                    </div>
+                </div>
+            `).join('') : `<div class="card p-4 text-center text-gray-500">No pending expenses.</div>`;
+
+            container.querySelectorAll('.btn-approve, .btn-reject').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const { projectId, id, type } = e.target.dataset;
+                    const newStatus = e.target.classList.contains('btn-approve') ? 'approved' : 'rejected';
+                    const collectionName = type === 'material' ? 'material_requests' : 'transactions';
+                    const docRef = doc(db, `/artifacts/${appId}/public/data/projects/${projectId}/${collectionName}/${id}`);
+                    try {
+                        await updateDoc(docRef, { status: newStatus });
+                        showNotification(`${type.charAt(0).toUpperCase() + type.slice(1)} ${newStatus}!`, 'success');
+                        renderApprovals(container); // Re-render
+                    } catch (error) {
+                        showNotification('Failed to update status.', 'error');
+                    }
+                });
+            });
+        }
+
+        function renderProjectsList(container) {
+            container.innerHTML = `
+                <div class="flex justify-between items-center mb-6">
+                    <h1 class="text-3xl font-bold">My Projects</h1>
+                    ${currentUserRole !== 'Site Supervisor' ? `
+                    <button id="add-project-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        New Project
+                    </button>` : ''}
+                </div>
+                <div id="projects-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="text-center p-8 col-span-full">Loading projects...</div>
+                </div>
+            `;
+             if (currentUserRole !== 'Site Supervisor') {
+                document.getElementById('add-project-btn').addEventListener('click', () => {
+                    renderAddProjectModal();
+                });
+            }
+            const projectsGrid = document.getElementById('projects-grid');
+            const projectsCollectionPath = `/artifacts/${appId}/public/data/projects`;
+            const q = query(collection(db, projectsCollectionPath), where("members", "array-contains", currentUser.uid));
+            
+            const unsub = onSnapshot(q, (snapshot) => {
+                if (snapshot.empty) {
+                    projectsGrid.innerHTML = `<div class="text-center p-8 col-span-full card bg-gray-50">You have no projects yet. Create one to get started!</div>`;
+                    return;
+                }
+                projectsGrid.innerHTML = snapshot.docs.map(doc => {
+                    const project = doc.data();
+                    return `
+                        <div class="card p-6 cursor-pointer" data-id="${doc.id}">
+                            <h2 class="text-xl font-bold mb-2 truncate">${project.name}</h2>
+                            <p class="text-gray-600 text-sm h-10 overflow-hidden">${project.description || 'No description'}</p>
+                        </div>
+                    `;
+                }).join('');
+
+                projectsGrid.querySelectorAll('.card').forEach(card => {
+                    card.addEventListener('click', () => {
+                        renderProjectView(card.dataset.id);
+                    });
+                });
+            });
+            currentUnsubscribes.push(unsub);
+        }
+        
+        function renderAddProjectModal() {
+            modalContainer.innerHTML = `
+                <div id="add-project-modal" class="modal">
+                    <div class="modal-content">
+                        <div class="mt-3 text-center">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900">Create New Project</h3>
+                            <form id="add-project-form" class="mt-2 px-7 py-3 space-y-4">
+                                <input type="text" id="project-name" placeholder="Project Name" class="input-field" required>
+                                <textarea id="project-desc" placeholder="Project Description" class="input-field h-24"></textarea>
+                                <div class="items-center px-4 py-3">
+                                    <button type="submit" class="btn-primary">Create Project</button>
+                                    <button id="close-modal-btn" type="button" class="mt-2 w-full px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancel</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            modalContainer.querySelector('#close-modal-btn').addEventListener('click', () => {
+                modalContainer.innerHTML = '';
+            });
+
+            modalContainer.querySelector('#add-project-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const name = e.target['project-name'].value;
+                const description = e.target['project-desc'].value;
+                
+                try {
+                    const projectsCollectionPath = `/artifacts/${appId}/public/data/projects`;
+                    await addDoc(collection(db, projectsCollectionPath), {
+                        name,
+                        description,
+                        ownerId: currentUser.uid,
+                        members: [currentUser.uid],
+                        createdAt: serverTimestamp()
+                    });
+                    showNotification("Project created!", "success");
+                    modalContainer.innerHTML = '';
+                } catch (error) {
+                    console.error("Error creating project:", error);
+                    showNotification("Failed to create project.", "error");
+                }
+            });
+        }
+
+        async function renderProjectView(projectId) {
+            clearSubscriptions();
+            const projectDocPath = `/artifacts/${appId}/public/data/projects/${projectId}`;
+            const projectDoc = await getDoc(doc(db, projectDocPath));
+            if (!projectDoc.exists()) {
+                showNotification("Project not found.", "error");
+                renderDashboard();
+                return;
+            }
+            const projectData = projectDoc.data();
+
+            appContent.innerHTML = `
+                <div class="mb-6">
+                    <a href="#" id="back-to-dashboard" class="text-indigo-600 hover:underline">&larr; Back to Dashboard</a>
+                    <h1 class="text-3xl font-bold mt-2">${projectData.name}</h1>
+                    <p class="text-gray-500">${projectData.description}</p>
+                </div>
+                <div class="flex border-b border-gray-200 mb-6 flex-wrap">
+                    <button class="tab active" data-tab="party">Party</button>
+                    <button class="tab" data-tab="transactions">Transactions</button>
+                    <button class="tab" data-tab="site">Site</button>
+                    <button class="tab" data-tab="material">Material</button>
+                </div>
+                <div id="project-tab-content" class="pb-20"></div>
+            `;
+            
+            document.getElementById('back-to-dashboard').addEventListener('click', (e) => {
+                e.preventDefault();
+                renderDashboard();
+            });
+
+            const tabs = appContent.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', (e) => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    e.currentTarget.classList.add('active');
+                    renderProjectTabContent(projectId, e.currentTarget.dataset.tab);
+                });
+            });
+
+            renderProjectTabContent(projectId, 'party');
+        }
+
+        function renderProjectTabContent(projectId, tabName) {
+            clearSubscriptions();
+            const container = document.getElementById('project-tab-content');
+            
+            if (tabName === 'party') {
+                renderPartyTab(projectId, container);
+            } else if (tabName === 'transactions') {
+                renderTransactionsTab(projectId, container);
+            } else if (tabName === 'site') {
+                renderSiteTab(projectId, container);
+            } else if (tabName === 'material') {
+                renderMaterialTab(projectId, container);
+            }
+        }
+        
+        function renderMaterialTab(projectId, container) {
+            container.innerHTML = `
+                <div class="flex justify-center mb-4">
+                    <div class="flex">
+                        <button class="sub-tab active" data-subtab="inventory">Inventory</button>
+                        <button class="sub-tab" data-subtab="request">Request</button>
+                        <button class="sub-tab" data-subtab="received">Received</button>
+                        <button class="sub-tab" data-subtab="used">Used</button>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center mb-4">
+                    <input type="search" placeholder="Search..." class="input-field w-full max-w-xs">
+                    <button id="add-material-btn" class="text-sm text-indigo-600 font-bold hover:underline whitespace-nowrap ml-4">+ Add from Library</button>
+                </div>
+                <div id="material-subtab-content" class="space-y-3 mb-24"></div>
+                <div class="fixed bottom-0 left-0 right-0 bg-white p-4 border-t shadow-lg flex justify-around items-center">
+                     <button id="material-request-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg">+ Request</button>
+                     <button id="add-material-action-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white h-12 w-12 rounded-full flex items-center justify-center text-2xl font-bold">+</button>
+                     <button id="material-received-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg">+ Received</button>
+                </div>
+            `;
+
+            document.getElementById('add-material-btn').addEventListener('click', () => renderAddMaterialToProjectModal(projectId));
+            document.getElementById('material-request-btn').addEventListener('click', () => renderRequestMaterialModal(projectId));
+            document.getElementById('material-received-btn').addEventListener('click', () => renderReceiveMaterialModal(projectId));
+            document.getElementById('add-material-action-btn').addEventListener('click', () => renderAddMaterialActionModal(projectId));
+            
+            const subtabs = container.querySelectorAll('.sub-tab');
+            subtabs.forEach(tab => {
+                tab.addEventListener('click', (e) => {
+                    subtabs.forEach(t => t.classList.remove('active'));
+                    e.target.classList.add('active');
+                    renderMaterialSubTabContent(projectId, e.target.dataset.subtab);
+                });
+            });
+
+            renderMaterialSubTabContent(projectId, 'inventory');
+        }
+
+        async function renderMaterialSubTabContent(projectId, subTabName) {
+            const container = document.getElementById('material-subtab-content');
+            const movementsPath = `/artifacts/${appId}/public/data/projects/${projectId}/material_movements`;
+
+            if (subTabName === 'inventory') {
+                container.innerHTML = `<div class="card p-6 text-center text-gray-500">Calculating inventory...</div>`;
+                const materialsPath = `/artifacts/${appId}/public/data/projects/${projectId}/materials`;
+                const materialsSnapshot = await getDocs(query(collection(db, materialsPath)));
+                const movementsSnapshot = await getDocs(query(collection(db, movementsPath)));
+
+                const inventory = {};
+                materialsSnapshot.docs.forEach(doc => {
+                    inventory[doc.data().name] = { unit: doc.data().unit, stock: 0 };
+                });
+
+                movementsSnapshot.docs.forEach(doc => {
+                    const move = doc.data();
+                    move.items.forEach(item => {
+                        if (inventory[item.name]) {
+                            const quantity = parseFloat(item.quantity) || 0;
+                            if (move.type === 'received') {
+                                inventory[item.name].stock += quantity;
+                            } else if (move.type === 'used') {
+                                inventory[item.name].stock -= quantity;
+                            }
+                        }
+                    });
+                });
+
+                if (Object.keys(inventory).length === 0) {
+                    container.innerHTML = `<div class="card p-6 text-center text-gray-500">No materials added to this project yet.</div>`;
+                    return;
+                }
+
+                container.innerHTML = Object.entries(inventory).map(([name, data]) => {
+                    return `<div class="card p-4 flex justify-between items-center">
+                                <div>
+                                    <p class="font-bold">${name}</p>
+                                    <p class="text-sm text-gray-500">${data.unit}</p>
+                                </div>
+                                <p class="text-lg font-semibold">${data.stock}</p>
+                            </div>`;
+                }).join('');
+
+            } else if (subTabName === 'request') {
+                const requestsPath = `/artifacts/${appId}/public/data/projects/${projectId}/material_requests`;
+                const unsub = onSnapshot(query(collection(db, requestsPath)), (snapshot) => {
+                    if (snapshot.empty) {
+                        container.innerHTML = `<div class="card p-6 text-center text-gray-500">No Material Requests yet.</div>`;
+                        return;
+                    }
+                    container.innerHTML = snapshot.docs.map(doc => {
+                        const req = doc.data();
+                        return `<div class="card p-4">
+                                    <div class="flex justify-between">
+                                        <p class="font-bold">Req #${req.requestNumber}</p>
+                                        <p class="text-sm">${req.date}</p>
+                                    </div>
+                                    <p class="text-sm text-gray-600 mt-2">${req.notes}</p>
+                                </div>`;
+                    }).join('');
+                });
+                currentUnsubscribes.push(unsub);
+            } else if (subTabName === 'received') {
+                const unsub = onSnapshot(query(collection(db, movementsPath), where("type", "==", "received")), (snapshot) => {
+                    if (snapshot.empty) {
+                        container.innerHTML = `<div class="card p-6 text-center text-gray-500">No Material Received yet.</div>`;
+                        return;
+                    }
+                    container.innerHTML = snapshot.docs.map(doc => {
+                        const rec = doc.data();
+                        const itemsSummary = rec.items.map(item => `${item.name} (Qty: ${item.quantity})`).join(', ');
+                        return `<div class="card p-4">
+                                    <div class="flex justify-between">
+                                        <p class="font-bold">GRN #${rec.grnNumber}</p>
+                                        <p class="text-sm">${rec.date}</p>
+                                    </div>
+                                    <p class="text-sm text-gray-600 mt-2">From: ${rec.partyName}</p>
+                                    <p class="text-sm text-gray-500 mt-1">Items: ${itemsSummary}</p>
+                                    <p class="text-sm text-gray-500 mt-1">Payment: ${rec.paymentStatus}</p>
+                                </div>`;
+                    }).join('');
+                });
+                currentUnsubscribes.push(unsub);
+            } else if (subTabName === 'used') {
+                 const unsub = onSnapshot(query(collection(db, movementsPath), where("type", "==", "used")), (snapshot) => {
+                    if (snapshot.empty) {
+                        container.innerHTML = `<div class="card p-6 text-center text-gray-500">No Material Usage recorded yet.</div>`;
+                        return;
+                    }
+                    container.innerHTML = snapshot.docs.map(doc => {
+                        const use = doc.data();
+                        const itemsSummary = use.items.map(item => `${item.name} (Qty: ${item.quantity})`).join(', ');
+                        return `<div class="card p-4">
+                                    <div class="flex justify-between">
+                                        <p class="font-bold">Usage Record</p>
+                                        <p class="text-sm">${use.date}</p>
+                                    </div>
+                                    <p class="text-sm text-gray-500 mt-1">Items: ${itemsSummary}</p>
+                                </div>`;
+                    }).join('');
+                });
+                currentUnsubscribes.push(unsub);
+            }
+        }
+        
+        async function renderAddMaterialToProjectModal(projectId) {
+            const masterMaterialsPath = `/artifacts/${appId}/users/${currentUser.uid}/materials`;
+            const projectMaterialsPath = `/artifacts/${appId}/public/data/projects/${projectId}/materials`;
+            
+            const masterSnap = await getDocs(query(collection(db, masterMaterialsPath)));
+            const projectSnap = await getDocs(query(collection(db, projectMaterialsPath)));
+            
+            const projectMaterialIds = projectSnap.docs.map(doc => doc.data().masterMaterialId);
+            
+            const availableMaterials = masterSnap.docs
+                .filter(doc => !projectMaterialIds.includes(doc.id))
+                .map(doc => `<label class="flex items-center space-x-3"><input type="checkbox" class="form-checkbox h-5 w-5" value="${doc.id}" data-name="${doc.data().name}" data-unit="${doc.data().unit}"><span>${doc.data().name} (${doc.data().unit})</span></label>`)
+                .join('');
+
+            modalContainer.innerHTML = `
+                <div class="modal"><div class="modal-content">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Add Material to Project</h3>
+                    <form id="add-material-to-project-form" class="space-y-4">
+                        <div class="space-y-2 max-h-60 overflow-y-auto">${availableMaterials || '<p>No new materials in master library.</p>'}</div>
+                        <div class="pt-4 flex flex-col space-y-2">
+                            <button type="submit" class="btn-primary">Add Selected</button>
+                            <button id="close-add-material-modal" type="button" class="w-full px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancel</button>
+                        </div>
+                    </form>
+                </div></div>
+            `;
+            modalContainer.querySelector('#close-add-material-modal').addEventListener('click', () => modalContainer.innerHTML = '');
+            modalContainer.querySelector('#add-material-to-project-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const selected = e.target.querySelectorAll('input[type="checkbox"]:checked');
+                if (selected.length === 0) {
+                    showNotification("Please select at least one material.", "error"); return;
+                }
+                try {
+                    for (const checkbox of selected) {
+                        await addDoc(collection(db, projectMaterialsPath), {
+                            masterMaterialId: checkbox.value,
+                            name: checkbox.dataset.name,
+                            unit: checkbox.dataset.unit
+                        });
+                    }
+                    showNotification("Materials added to project!", "success");
+                    modalContainer.innerHTML = '';
+                } catch(error) {
+                    showNotification("Failed to add materials.", "error");
+                }
+            });
+        }
+        
+        async function renderRequestMaterialModal(projectId) {
+            modalContainer.innerHTML = `
+                <div class="modal"><div class="modal-content">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Request for Material</h3>
+                    <form id="request-material-form" class="space-y-4">
+                        <div class="flex gap-4">
+                            <input type="text" value="MR-1" class="input-field w-1/3" disabled>
+                            <input type="date" id="request-date" class="input-field w-2/3" required>
+                        </div>
+                        <div id="request-items-container" class="space-y-2"></div>
+                        <button type="button" id="add-request-item-btn" class="w-full text-indigo-600 font-bold p-2 border-dashed border-2 border-gray-300 rounded-md hover:bg-gray-50">+ Add Material</button>
+                        <textarea id="request-notes" placeholder="Notes" class="input-field h-20"></textarea>
+                        <div class="pt-4 flex flex-col space-y-2">
+                            <button type="submit" class="btn-primary">Save Request</button>
+                            <button id="close-request-modal" type="button" class="w-full px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancel</button>
+                        </div>
+                    </form>
+                </div></div>
+            `;
+            modalContainer.querySelector('#close-request-modal').addEventListener('click', () => modalContainer.innerHTML = '');
+            document.getElementById('request-date').value = new Date().toISOString().split('T')[0];
+
+            const itemsContainer = document.getElementById('request-items-container');
+            const materialsPath = `/artifacts/${appId}/public/data/projects/${projectId}/materials`;
+            const materialsSnapshot = await getDocs(query(collection(db, materialsPath)));
+            const materialOptions = materialsSnapshot.docs.map(doc => `<option value="${doc.data().name}">${doc.data().name}</option>`).join('');
+
+            const addRequestItem = () => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'flex gap-2 items-center';
+                itemDiv.innerHTML = `
+                    <select class="input-field flex-grow request-item-name">${materialOptions}</select>
+                    <input type="number" placeholder="Qty" class="input-field w-24 request-item-qty">
+                    <button type="button" class="text-red-500 font-bold text-xl remove-item-btn">&times;</button>
+                `;
+                itemsContainer.appendChild(itemDiv);
+                itemDiv.querySelector('.remove-item-btn').addEventListener('click', () => itemDiv.remove());
+            };
+            
+            document.getElementById('add-request-item-btn').addEventListener('click', addRequestItem);
+            addRequestItem();
+
+            modalContainer.querySelector('#request-material-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const items = [];
+                const itemNodes = itemsContainer.querySelectorAll('.flex');
+                itemNodes.forEach(node => {
+                    const name = node.querySelector('.request-item-name').value;
+                    const quantity = node.querySelector('.request-item-qty').value;
+                    if (name && quantity) items.push({ name, quantity });
+                });
+
+                if (items.length === 0) {
+                    showNotification("Please add at least one material.", "error");
+                    return;
+                }
+
+                const requestData = {
+                    requestNumber: "MR-1", // This should be dynamic in a real app
+                    date: e.target['request-date'].value,
+                    notes: e.target['request-notes'].value,
+                    items: items,
+                    status: 'Pending',
+                    requesterId: currentUser.email,
+                    createdAt: serverTimestamp()
+                };
+                
+                const requestsPath = `/artifacts/${appId}/public/data/projects/${projectId}/material_requests`;
+                try {
+                    await addDoc(collection(db, requestsPath), requestData);
+                    showNotification("Material request submitted!", "success");
+                    modalContainer.innerHTML = '';
+                } catch(error) { showNotification("Failed to submit request.", "error"); }
+            });
+        }
+        
+        async function renderReceiveMaterialModal(projectId) {
+            const partiesPath = `/artifacts/${appId}/public/data/projects/${projectId}/project_parties`;
+            const partiesSnapshot = await getDocs(query(collection(db, partiesPath)));
+            const partiesOptions = partiesSnapshot.docs.map(doc => `<option value="${doc.data().name}">${doc.data().name}</option>`).join('');
+            
+            const materialsPath = `/artifacts/${appId}/public/data/projects/${projectId}/materials`;
+            const materialsSnapshot = await getDocs(query(collection(db, materialsPath)));
+            const materialOptions = materialsSnapshot.docs.map(doc => `<option value="${doc.data().name}">${doc.data().name}</option>`).join('');
+
+            modalContainer.innerHTML = `
+                <div class="modal"><div class="modal-content">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Material Received</h3>
+                    <form id="receive-material-form" class="space-y-4">
+                        <div class="flex gap-4"><input type="text" placeholder="GRN No" id="grn-number" class="input-field w-1/3"><input type="date" id="receive-date" class="input-field w-2/3" required></div>
+                        <select id="receive-party" class="input-field" required><option value="" disabled selected>Party Name *</option>${partiesOptions}</select>
+                        
+                        <div id="receive-items-container" class="space-y-2 border-t pt-4 mt-4"></div>
+                        <button type="button" id="add-receive-item-btn" class="w-full text-indigo-600 font-bold p-2 border-dashed border-2 border-gray-300 rounded-md hover:bg-gray-50">+ Add Material</button>
+
+                        <div class="border-t pt-4 mt-4">
+                            <h4 class="font-semibold mb-2">Payment Details</h4>
+                            <select id="payment-status" class="input-field">
+                                <option value="On Credit">On Credit</option>
+                                <option value="Paid by Cash">Paid by Cash</option>
+                                <option value="Paid by Bank">Paid by Bank</option>
+                                <option value="Adjusted">Adjusted</option>
+                            </select>
+                            <input type="number" id="payment-amount" placeholder="Amount Paid" step="0.01" class="input-field mt-2 hidden">
+                        </div>
+
+                        <div class="pt-4 flex flex-col space-y-2">
+                            <button type="submit" class="btn-primary">Save</button>
+                            <button id="close-receive-modal" type="button" class="w-full px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancel</button>
+                        </div>
+                    </form>
+                </div></div>
+            `;
+            modalContainer.querySelector('#close-receive-modal').addEventListener('click', () => modalContainer.innerHTML = '');
+            document.getElementById('receive-date').value = new Date().toISOString().split('T')[0];
+            
+            const paymentStatusEl = document.getElementById('payment-status');
+            const paymentAmountEl = document.getElementById('payment-amount');
+            paymentStatusEl.addEventListener('change', (e) => {
+                if (e.target.value === 'Paid by Cash' || e.target.value === 'Paid by Bank') {
+                    paymentAmountEl.classList.remove('hidden');
+                } else {
+                    paymentAmountEl.classList.add('hidden');
+                }
+            });
+
+            const itemsContainer = document.getElementById('receive-items-container');
+            const addReceiveItem = () => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'flex gap-2 items-center';
+                itemDiv.innerHTML = `<select class="input-field flex-grow receive-item-name">${materialOptions}</select><input type="number" placeholder="Qty" class="input-field w-24 receive-item-qty"><button type="button" class="text-red-500 font-bold text-xl remove-item-btn">&times;</button>`;
+                itemsContainer.appendChild(itemDiv);
+                itemDiv.querySelector('.remove-item-btn').addEventListener('click', () => itemDiv.remove());
+            };
+            document.getElementById('add-receive-item-btn').addEventListener('click', addReceiveItem);
+            addReceiveItem();
+
+            modalContainer.querySelector('#receive-material-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const items = [];
+                const itemNodes = itemsContainer.querySelectorAll('.flex');
+                itemNodes.forEach(node => {
+                    const name = node.querySelector('.receive-item-name').value;
+                    const quantity = node.querySelector('.receive-item-qty').value;
+                    if (name && quantity) items.push({ name, quantity });
+                });
+
+                if (items.length === 0) {
+                    showNotification("Please add at least one material.", "error"); return;
+                }
+
+                const receivedData = {
+                    type: 'received',
+                    grnNumber: e.target['grn-number'].value || 'N/A',
+                    date: e.target['receive-date'].value,
+                    partyName: e.target['receive-party'].value,
+                    items: items,
+                    paymentStatus: e.target['payment-status'].value,
+                    amountPaid: parseFloat(e.target['payment-amount'].value) || 0,
+                    receiverId: currentUser.uid,
+                    createdAt: serverTimestamp()
+                };
+                if (!receivedData.partyName) {
+                    showNotification("Party Name is required.", "error"); return;
+                }
+                
+                const movementsPath = `/artifacts/${appId}/public/data/projects/${projectId}/material_movements`;
+                const transactionsPath = `/artifacts/${appId}/public/data/projects/${projectId}/transactions`;
+                try {
+                    await addDoc(collection(db, movementsPath), receivedData);
+                    if ((receivedData.paymentStatus === 'Paid by Cash' || receivedData.paymentStatus === 'Paid by Bank') && receivedData.amountPaid > 0) {
+                        await addDoc(collection(db, transactionsPath), {
+                            type: 'out',
+                            party: receivedData.partyName,
+                            amount: receivedData.amountPaid,
+                            description: `Material Purchase (GRN #${receivedData.grnNumber})`,
+                            method: receivedData.paymentStatus === 'Paid by Cash' ? 'Cash' : 'Bank Transfer',
+                            status: 'approved',
+                            authorId: currentUser.uid,
+                            createdAt: serverTimestamp()
+                        });
+                    }
+                    showNotification("Material receipt saved!", "success");
+                    modalContainer.innerHTML = '';
+                } catch(error) { showNotification("Failed to save receipt.", "error"); }
+            });
+        }
+        
+        function renderAddMaterialActionModal(projectId) {
+            modalContainer.innerHTML = `
+                <div class="modal">
+                    <div class="modal-content">
+                         <button id="close-add-mat-modal" class="absolute top-2 right-4 text-2xl font-bold text-gray-500">&times;</button>
+                         <div class="p-4">
+                            <h4 class="font-semibold text-gray-500 mb-2">Material</h4>
+                            <div class="grid grid-cols-2 gap-3">
+                                <button data-action="request" class="transaction-type-btn">+ Request</button>
+                                <button data-action="received" class="transaction-type-btn">+ Received</button>
+                                <button data-action="purchased" class="transaction-type-btn">+ Purchased</button>
+                                <button data-action="used" class="transaction-type-btn">+ Used</button>
+                                <button data-action="subcon-issued" class="transaction-type-btn">+ Subcon Issued</button>
+                                <button data-action="transfer" class="transaction-type-btn">+ Material Transfer</button>
+                            </div>
+                         </div>
+                    </div>
+                </div>
+            `;
+            modalContainer.querySelector('#close-add-mat-modal').addEventListener('click', () => modalContainer.innerHTML = '');
+            modalContainer.querySelectorAll('.transaction-type-btn').forEach(btn => {
+                btn.addEventListener('click', e => {
+                    const action = e.target.dataset.action;
+                    modalContainer.innerHTML = '';
+                    if (action === 'request') {
+                        renderRequestMaterialModal(projectId);
+                    } else if (action === 'received' || action === 'purchased') {
+                        renderReceiveMaterialModal(projectId);
+                    } else if (action === 'used') {
+                        renderRecordUsageModal(projectId);
+                    }
+                    else {
+                        showNotification('This feature is not yet implemented.', 'error');
+                    }
+                });
+            });
+        }
+
+        async function renderRecordUsageModal(projectId) {
+            const materialsPath = `/artifacts/${appId}/public/data/projects/${projectId}/materials`;
+            const materialsSnapshot = await getDocs(query(collection(db, materialsPath)));
+            const materialOptions = materialsSnapshot.docs.map(doc => `<option value="${doc.data().name}">${doc.data().name}</option>`).join('');
+
+            modalContainer.innerHTML = `
+                <div class="modal"><div class="modal-content">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Record Material Usage</h3>
+                    <form id="usage-form" class="space-y-4">
+                        <input type="date" id="usage-date" class="input-field" required>
+                        <div id="usage-items-container" class="space-y-2"></div>
+                        <button type="button" id="add-usage-item-btn" class="w-full text-indigo-600 font-bold p-2 border-dashed border-2 border-gray-300 rounded-md hover:bg-gray-50">+ Add Material</button>
+                        <div class="pt-4 flex flex-col space-y-2">
+                            <button type="submit" class="btn-primary">Save Usage</button>
+                            <button id="close-usage-modal" type="button" class="w-full px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancel</button>
+                        </div>
+                    </form>
+                </div></div>
+            `;
+            modalContainer.querySelector('#close-usage-modal').addEventListener('click', () => modalContainer.innerHTML = '');
+            document.getElementById('usage-date').value = new Date().toISOString().split('T')[0];
+
+            const itemsContainer = document.getElementById('usage-items-container');
+            const addUsageItem = () => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'flex gap-2 items-center';
+                itemDiv.innerHTML = `<select class="input-field flex-grow usage-item-name">${materialOptions}</select><input type="number" placeholder="Qty" class="input-field w-24 usage-item-qty"><button type="button" class="text-red-500 font-bold text-xl remove-item-btn">&times;</button>`;
+                itemsContainer.appendChild(itemDiv);
+                itemDiv.querySelector('.remove-item-btn').addEventListener('click', () => itemDiv.remove());
+            };
+            document.getElementById('add-usage-item-btn').addEventListener('click', addUsageItem);
+            addUsageItem();
+
+            modalContainer.querySelector('#usage-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const items = [];
+                const itemNodes = itemsContainer.querySelectorAll('.flex');
+                itemNodes.forEach(node => {
+                    const name = node.querySelector('.usage-item-name').value;
+                    const quantity = node.querySelector('.usage-item-qty').value;
+                    if (name && quantity) items.push({ name, quantity });
+                });
+
+                if (items.length === 0) {
+                    showNotification("Please add at least one material.", "error"); return;
+                }
+
+                const usageData = {
+                    type: 'used',
+                    date: e.target['usage-date'].value,
+                    items: items,
+                    userId: currentUser.uid,
+                    createdAt: serverTimestamp()
+                };
+                
+                const movementsPath = `/artifacts/${appId}/public/data/projects/${projectId}/material_movements`;
+                try {
+                    await addDoc(collection(db, movementsPath), usageData);
+                    showNotification("Material usage recorded!", "success");
+                    modalContainer.innerHTML = '';
+                } catch(error) { showNotification("Failed to record usage.", "error"); }
+            });
+        }
+
+        async function renderSiteTab(projectId, container) {
+            const today = siteTabDate;
+            const formattedDate = today.toLocaleDateString('en-US', { day: '2-digit', month: 'short', weekday: 'short' });
+            const dateString = today.toISOString().split('T')[0];
+            
+            const movementsPath = `/artifacts/${appId}/public/data/projects/${projectId}/material_movements`;
+            const receivedQuery = query(collection(db, movementsPath), where("date", "==", dateString), where("type", "==", "received"));
+            const usedQuery = query(collection(db, movementsPath), where("date", "==", dateString), where("type", "==", "used"));
+
+            const receivedSnapshot = await getDocs(receivedQuery);
+            const usedSnapshot = await getDocs(usedQuery);
+
+            container.innerHTML = `
+                <div class="flex justify-between items-center mb-4">
+                    <button id="prev-day-btn" class="p-2 rounded-full hover:bg-gray-200">&lt;</button>
+                    <h2 id="site-date-display" class="text-lg font-semibold">${formattedDate}</h2>
+                    <button id="next-day-btn" class="p-2 rounded-full hover:bg-gray-200">&gt;</button>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                    <div class="card p-4 text-center bg-blue-50"><p class="text-sm text-blue-800">Site Staff</p><p class="text-2xl font-bold text-blue-900">0</p></div>
+                    <div class="card p-4 text-center bg-green-50"><p class="text-sm text-green-800">Material Received</p><p class="text-2xl font-bold text-green-900">${receivedSnapshot.size}</p></div>
+                    <div class="card p-4 text-center bg-red-50 col-span-2 md:col-span-1"><p class="text-sm text-red-800">Material Used</p><p class="text-2xl font-bold text-red-900">${usedSnapshot.size}</p></div>
+                </div>
+
+                <div class="mb-6">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-xl font-bold">Site Photos & Documents</h3>
+                        <button id="upload-site-file-btn" class="text-sm text-indigo-600 font-bold hover:underline">+ Upload</button>
+                    </div>
+                    <div id="site-files-list" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">Loading files...</div>
+                </div>
+
+                <div class="mb-6">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-xl font-bold">Ongoing Tasks</h3>
+                        <a href="#" class="text-sm text-indigo-600">View All</a>
+                    </div>
+                    <div id="dpr-list" class="space-y-3">Loading reports...</div>
+                </div>
+                
+                <div class="fixed bottom-0 left-0 right-0 bg-white p-4 border-t shadow-lg flex justify-center">
+                    <button id="create-dpr-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg">Create DPR</button>
+                </div>
+            `;
+            
+            document.getElementById('prev-day-btn').addEventListener('click', () => { siteTabDate.setDate(siteTabDate.getDate() - 1); renderSiteTab(projectId, container); });
+            document.getElementById('next-day-btn').addEventListener('click', () => { siteTabDate.setDate(siteTabDate.getDate() + 1); renderSiteTab(projectId, container); });
+            document.getElementById('create-dpr-btn').addEventListener('click', () => renderDprModal(projectId));
+            document.getElementById('upload-site-file-btn').addEventListener('click', () => renderUploadSiteFileModal(projectId));
+            
+            const dprListEl = document.getElementById('dpr-list');
+            const logsCollectionPath = `/artifacts/${appId}/public/data/projects/${projectId}/daily_logs`;
+            const dprQuery = query(collection(db, logsCollectionPath), where("date", "==", dateString));
+            const dprUnsub = onSnapshot(dprQuery, (snapshot) => {
+                if (snapshot.empty) {
+                    dprListEl.innerHTML = `<div class="card p-6 text-center text-gray-500">No progress today.</div>`;
+                    return;
+                }
+                dprListEl.innerHTML = snapshot.docs.map(doc => `<div class="card p-4"><p class="text-gray-700 whitespace-pre-wrap">${doc.data().notes}</p><p class="text-xs text-gray-400 mt-2">By: ${doc.data().authorEmail}</p></div>`).join('');
+            });
+            currentUnsubscribes.push(dprUnsub);
+
+            const siteFilesListEl = document.getElementById('site-files-list');
+            const siteFilesPath = `/artifacts/${appId}/public/data/projects/${projectId}/site_files`;
+            const filesQuery = query(collection(db, siteFilesPath), where("date", "==", dateString));
+            const filesUnsub = onSnapshot(filesQuery, (snapshot) => {
+                if (snapshot.empty) {
+                    siteFilesListEl.innerHTML = `<div class="text-gray-500 col-span-full text-center p-4">No files for this day.</div>`;
+                    return;
+                }
+                siteFilesListEl.innerHTML = snapshot.docs.map(doc => {
+                    const file = doc.data();
+                    const icon = file.fileType === 'Photo' ? '📷' : (file.fileType === 'Plan' ? '🗺️' : '📄');
+                    return `<div class="card p-3 text-center"><div class="text-3xl mb-2">${icon}</div><p class="text-sm truncate font-medium">${file.fileName}</p></div>`;
+                }).join('');
+            });
+            currentUnsubscribes.push(filesUnsub);
+        }
+
+        function renderUploadSiteFileModal(projectId) {
+            modalContainer.innerHTML = `
+                <div class="modal">
+                    <div class="modal-content">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Upload Site File</h3>
+                        <form id="upload-site-file-form" class="space-y-4">
+                            <p class="text-sm text-gray-600">This will add a record for the file on ${siteTabDate.toLocaleDateString()}.</p>
+                            <input type="text" id="site-file-name" placeholder="File Name (e.g., east-wing-photo.jpg)" class="input-field" required>
+                            <select id="site-file-type" class="input-field" required>
+                                <option value="Photo">Photo</option>
+                                <option value="Plan">Plan</option>
+                                <option value="Document">Document</option>
+                            </select>
+                            <div class="pt-4 flex flex-col space-y-2">
+                                <button type="submit" class="btn-primary">Save Record</button>
+                                <button id="close-upload-modal" type="button" class="w-full px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            `;
+            modalContainer.querySelector('#close-upload-modal').addEventListener('click', () => modalContainer.innerHTML = '');
+            modalContainer.querySelector('#upload-site-file-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const fileName = e.target['site-file-name'].value;
+                const fileType = e.target['site-file-type'].value;
+                const dateString = siteTabDate.toISOString().split('T')[0];
+                const siteFilesPath = `/artifacts/${appId}/public/data/projects/${projectId}/site_files`;
+                try {
+                    await addDoc(collection(db, siteFilesPath), {
+                        fileName, fileType, date: dateString,
+                        uploaderId: currentUser.uid,
+                        uploaderEmail: currentUser.email,
+                        createdAt: serverTimestamp()
+                    });
+                    showNotification("File record saved!", "success");
+                    modalContainer.innerHTML = '';
+                } catch(error) {
+                    showNotification("Failed to save file record.", "error");
+                    console.error("Error saving file record:", error);
+                }
+            });
+        }
+
+        function renderDprModal(projectId) {
+            modalContainer.innerHTML = `
+                <div class="modal">
+                    <div class="modal-content">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">New Daily Progress Report</h3>
+                        <form id="add-dpr-form" class="space-y-4">
+                            <input type="date" id="dpr-date" class="input-field" required>
+                            <textarea id="dpr-notes" placeholder="Notes on work performed, weather, etc." class="input-field h-32" required></textarea>
+                            <div class="pt-4 flex flex-col space-y-2">
+                                <button type="submit" class="btn-primary">Save Report</button>
+                                <button id="close-dpr-modal" type="button" class="w-full px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            `;
+            const dateInput = modalContainer.querySelector('#dpr-date');
+            dateInput.value = siteTabDate.toISOString().split('T')[0];
+
+            modalContainer.querySelector('#close-dpr-modal').addEventListener('click', () => modalContainer.innerHTML = '');
+            modalContainer.querySelector('#add-dpr-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const logDate = e.target['dpr-date'].value;
+                const logNotes = e.target['dpr-notes'].value;
+                const logsCollectionPath = `/artifacts/${appId}/public/data/projects/${projectId}/daily_logs`;
+                try {
+                    await addDoc(collection(db, logsCollectionPath), {
+                        date: logDate,
+                        notes: logNotes,
+                        authorId: currentUser.uid,
+                        authorEmail: currentUser.email,
+                        createdAt: serverTimestamp()
+                    });
+                    showNotification("DPR saved!", "success");
+                    modalContainer.innerHTML = '';
+                } catch (error) {
+                    showNotification("Failed to save DPR.", "error");
+                }
+            });
+        }
+
+        function renderPartyTab(projectId, container) {
+            container.innerHTML = `
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold">Project Parties</h2>
+                    <button id="add-party-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        Add Party
+                    </button>
+                </div>
+                <div id="parties-list" class="space-y-3">Loading parties...</div>
+            `;
+
+            document.getElementById('add-party-btn').addEventListener('click', () => renderAddPartyToProjectModal(projectId));
+
+            const partiesListEl = document.getElementById('parties-list');
+            const partiesPath = `/artifacts/${appId}/public/data/projects/${projectId}/project_parties`;
+            const transactionsPath = `/artifacts/${appId}/public/data/projects/${projectId}/transactions`;
+
+            const partiesQuery = query(collection(db, partiesPath));
+            const unsubParties = onSnapshot(partiesQuery, (partiesSnapshot) => {
+                const transactionsQuery = query(collection(db, transactionsPath));
+                const unsubTransactions = onSnapshot(transactionsQuery, (transactionsSnapshot) => {
+                    const transactionsByParty = {};
+                    transactionsSnapshot.docs.forEach(doc => {
+                        const tx = doc.data();
+                        if (!transactionsByParty[tx.party]) {
+                            transactionsByParty[tx.party] = { totalIn: 0, totalOut: 0 };
+                        }
+                        const amount = parseFloat(tx.amount) || 0;
+                        if (tx.type === 'in') {
+                            transactionsByParty[tx.party].totalIn += amount;
+                        } else {
+                            transactionsByParty[tx.party].totalOut += amount;
+                        }
+                    });
+
+                    if (partiesSnapshot.empty) {
+                        partiesListEl.innerHTML = `<div class="card p-6 text-center text-gray-500">No parties added yet.</div>`;
+                        return;
+                    }
+
+                    partiesListEl.innerHTML = partiesSnapshot.docs.map(doc => {
+                        const party = doc.data();
+                        const partyName = party.name;
+                        const summary = transactionsByParty[partyName] || { totalIn: 0, totalOut: 0 };
+                        const balance = summary.totalOut - summary.totalIn;
+                        
+                        let balanceText = '';
+                        if (balance > 0) {
+                            balanceText = `<p class="font-bold text-red-600">₹${balance.toFixed(2)} To Pay</p>`;
+                        } else if (balance < 0) {
+                             balanceText = `<p class="font-bold text-green-600">₹${Math.abs(balance).toFixed(2)} Advance</p>`;
+                        }
+
+                        return `
+                            <div class="card p-4 flex justify-between items-center">
+                                <div>
+                                    <p class="font-semibold text-lg">${partyName}</p>
+                                    <p class="text-sm text-gray-500">${party.role}</p>
+                                </div>
+                                <div>
+                                    ${balanceText}
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                });
+                currentUnsubscribes.push(unsubTransactions);
+            });
+            currentUnsubscribes.push(unsubParties);
+        }
+
+        async function renderAddPartyToProjectModal(projectId) {
+            const masterPartiesPath = `/artifacts/${appId}/users/${currentUser.uid}/parties`;
+            const projectPartiesPath = `/artifacts/${appId}/public/data/projects/${projectId}/project_parties`;
+            
+            const masterPartiesSnap = await getDocs(query(collection(db, masterPartiesPath)));
+            const projectPartiesSnap = await getDocs(query(collection(db, projectPartiesPath)));
+            
+            const projectPartyIds = projectPartiesSnap.docs.map(doc => doc.data().masterPartyId);
+            
+            const availableParties = masterPartiesSnap.docs
+                .filter(doc => !projectPartyIds.includes(doc.id))
+                .map(doc => `<label class="flex items-center space-x-3"><input type="checkbox" class="form-checkbox h-5 w-5" value="${doc.id}" data-name="${doc.data().name}" data-role="${doc.data().role}"><span>${doc.data().name} (${doc.data().role})</span></label>`)
+                .join('');
+
+            modalContainer.innerHTML = `
+                <div class="modal"><div class="modal-content">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Add Party to Project</h3>
+                    <form id="add-party-to-project-form" class="space-y-4">
+                        <div class="space-y-2 max-h-60 overflow-y-auto">${availableParties || '<p>No new parties to add.</p>'}</div>
+                        <div class="pt-4 flex flex-col space-y-2">
+                            <button type="submit" class="btn-primary">Add Selected</button>
+                            <button id="close-add-party-modal" type="button" class="w-full px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancel</button>
+                        </div>
+                    </form>
+                </div></div>
+            `;
+            modalContainer.querySelector('#close-add-party-modal').addEventListener('click', () => modalContainer.innerHTML = '');
+            modalContainer.querySelector('#add-party-to-project-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const selected = e.target.querySelectorAll('input[type="checkbox"]:checked');
+                if (selected.length === 0) {
+                    showNotification("Please select at least one party.", "error"); return;
+                }
+                try {
+                    for (const checkbox of selected) {
+                        const projectPartyRef = doc(collection(db, projectPartiesPath));
+                        await setDoc(projectPartyRef, {
+                            masterPartyId: checkbox.value,
+                            name: checkbox.dataset.name,
+                            role: checkbox.dataset.role
+                        });
+                    }
+                    showNotification("Parties added to project!", "success");
+                    modalContainer.innerHTML = '';
+                } catch(error) {
+                    showNotification("Failed to add parties.", "error");
+                }
+            });
+        }
+
+        function renderAddPartyModal(isMaster = false) {
+            modalContainer.innerHTML = `
+                <div class="modal">
+                    <div class="modal-content">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Add New Party</h3>
+                        <form id="add-party-form" class="space-y-4">
+                            <input type="text" id="party-name" placeholder="Party Name *" class="input-field" required>
+                            <input type="text" id="party-role" placeholder="Role (e.g., Investor, Worker)" class="input-field" required>
+                            <div class="pt-4 flex flex-col space-y-2">
+                                <button type="submit" class="btn-primary">Save Party</button>
+                                <button id="close-party-modal" type="button" class="w-full px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            `;
+            modalContainer.querySelector('#close-party-modal').addEventListener('click', () => modalContainer.innerHTML = '');
+            modalContainer.querySelector('#add-party-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const name = e.target['party-name'].value;
+                const role = e.target['party-role'].value;
+                if (!name || !role) {
+                    showNotification("Please fill all fields.", "error");
+                    return;
+                }
+                const partiesPath = `/artifacts/${appId}/users/${currentUser.uid}/parties`;
+                
+                try {
+                    await addDoc(collection(db, partiesPath), { name, role });
+                    showNotification("Party added successfully!", "success");
+                    modalContainer.innerHTML = '';
+                } catch(error) {
+                    showNotification("Failed to add party.", "error");
+                    console.error("Error adding party: ", error);
+                }
+            });
+        }
+
+        function renderTransactionsTab(projectId, container) {
+            container.innerHTML = `
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                    <div class="card p-4 text-center">
+                        <p class="text-sm text-gray-500">BALANCE</p>
+                        <p id="summary-balance" class="text-2xl font-bold text-gray-800">₹0.00</p>
+                    </div>
+                    <div class="card p-4 text-center">
+                        <p class="text-sm text-gray-500">TOTAL IN</p>
+                        <p id="summary-total-in" class="text-2xl font-bold text-green-600">₹0.00</p>
+                    </div>
+                    <div class="card p-4 text-center col-span-2 md:col-span-1">
+                        <p class="text-sm text-gray-500">TOTAL OUT</p>
+                        <p id="summary-total-out" class="text-2xl font-bold text-red-600">₹0.00</p>
+                    </div>
+                </div>
+                <div id="transactions-list" class="space-y-3 mb-24">Loading transactions...</div>
+                <div class="fixed bottom-0 left-0 right-0 bg-white p-4 border-t shadow-lg flex justify-around items-center">
+                     <button id="payment-in-btn" class="text-green-600 font-bold py-2 px-6 rounded-lg">Payment In</button>
+                     <button id="add-transaction-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white h-12 w-12 rounded-full flex items-center justify-center text-2xl font-bold">+</button>
+                     <button id="payment-out-btn" class="text-red-600 font-bold py-2 px-6 rounded-lg">Payment Out</button>
+                </div>
+            `;
+
+            document.getElementById('payment-in-btn').addEventListener('click', () => renderPaymentModal(projectId, 'in'));
+            document.getElementById('payment-out-btn').addEventListener('click', () => renderPaymentModal(projectId, 'out'));
+            document.getElementById('add-transaction-btn').addEventListener('click', () => renderAddTransactionModal(projectId));
+
+            const transactionsListEl = document.getElementById('transactions-list');
+            const balanceEl = document.getElementById('summary-balance');
+            const totalInEl = document.getElementById('summary-total-in');
+            const totalOutEl = document.getElementById('summary-total-out');
+
+            const transactionsPath = `/artifacts/${appId}/public/data/projects/${projectId}/transactions`;
+            const q = query(collection(db, transactionsPath), where("status", "==", "approved"));
+
+            const unsub = onSnapshot(q, (snapshot) => {
+                let totalIn = 0;
+                let totalOut = 0;
+
+                if (snapshot.empty) {
+                    transactionsListEl.innerHTML = `<div class="card p-6 text-center text-gray-500">No approved transactions yet.</div>`;
+                } else {
+                    transactionsListEl.innerHTML = snapshot.docs.map(doc => {
+                        const tx = doc.data();
+                        const amount = parseFloat(tx.amount) || 0;
+                        if (tx.type === 'in') {
+                            totalIn += amount;
+                            return `
+                                <div class="card p-4 flex justify-between items-center">
+                                    <div>
+                                        <p class="font-semibold">${tx.party}</p>
+                                        <p class="text-sm text-gray-500">${tx.description || 'Payment Received'}</p>
+                                    </div>
+                                    <p class="font-bold text-green-600">+ ₹${amount.toFixed(2)}</p>
+                                </div>
+                            `;
+                        } else {
+                            totalOut += amount;
+                            return `
+                                <div class="card p-4 flex justify-between items-center">
+                                    <div>
+                                        <p class="font-semibold">${tx.party}</p>
+                                        <p class="text-sm text-gray-500">${tx.description || 'Payment Made'}</p>
+                                    </div>
+                                    <p class="font-bold text-red-600">- ₹${amount.toFixed(2)}</p>
+                                </div>
+                            `;
+                        }
+                    }).join('');
+                }
+                
+                const balance = totalIn - totalOut;
+                balanceEl.textContent = `₹${balance.toFixed(2)}`;
+                totalInEl.textContent = `₹${totalIn.toFixed(2)}`;
+                totalOutEl.textContent = `₹${totalOut.toFixed(2)}`;
+            });
+            currentUnsubscribes.push(unsub);
+        }
+        
+        function renderAddTransactionModal(projectId) {
+            modalContainer.innerHTML = `
+                <div class="modal">
+                    <div class="modal-content">
+                         <button id="close-add-tx-modal" class="absolute top-2 right-4 text-2xl font-bold text-gray-500">&times;</button>
+                         <div class="p-4">
+                            <h4 class="font-semibold text-gray-500 mb-2">Payment</h4>
+                            <div class="grid grid-cols-2 gap-3">
+                                <button data-action="payment-out" class="transaction-type-btn">Payment Out</button>
+                                <button data-action="payment-in" class="transaction-type-btn">Payment In</button>
+                                <button data-action="debit-note" class="transaction-type-btn">Debit Note</button>
+                                <button data-action="credit-note" class="transaction-type-btn">Credit Note</button>
+                                <button data-action="party-to-party" class="transaction-type-btn">Party to Party</button>
+                            </div>
+                            <h4 class="font-semibold text-gray-500 mt-4 mb-2">Sales</h4>
+                            <div class="grid grid-cols-2 gap-3">
+                                <button data-action="sales-invoice" class="transaction-type-btn">Sales Invoice</button>
+                            </div>
+                             <h4 class="font-semibold text-gray-500 mt-4 mb-2">Expense</h4>
+                            <div class="grid grid-cols-2 gap-3">
+                                <button data-action="material-purchase" class="transaction-type-btn">Material Purchase</button>
+                                <button data-action="material-return" class="transaction-type-btn">Material Return</button>
+                                <button data-action="material-transfer" class="transaction-type-btn">Material Transfer</button>
+                                <button data-action="other-expense" class="transaction-type-btn">Other Expense</button>
+                            </div>
+                             <h4 class="font-semibold text-gray-500 mt-4 mb-2">My Account</h4>
+                            <div class="grid grid-cols-2 gap-3">
+                                <button data-action="i-paid" class="transaction-type-btn">I Paid</button>
+                                <button data-action="i-received" class="transaction-type-btn">I Received</button>
+                            </div>
+                         </div>
+                    </div>
+                </div>
+            `;
+
+            modalContainer.querySelector('#close-add-tx-modal').addEventListener('click', () => {
+                modalContainer.innerHTML = '';
+            });
+
+            modalContainer.querySelectorAll('.transaction-type-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const action = e.target.dataset.action;
+                    modalContainer.innerHTML = ''; // Close the selection modal first
+                    if (action === 'payment-in' || action === 'i-received') {
+                        renderPaymentModal(projectId, 'in');
+                    } else if (action === 'payment-out' || action === 'i-paid') {
+                        renderPaymentModal(projectId, 'out');
+                    } else if (action === 'material-purchase') {
+                        renderReceiveMaterialModal(projectId);
+                    } else if (action === 'other-expense') {
+                        renderOtherExpenseModal(projectId);
+                    } else if (action === 'credit-note') {
+                        renderNoteModal(projectId, 'credit');
+                    } else if (action === 'debit-note') {
+                        renderNoteModal(projectId, 'debit');
+                    }
+                    else {
+                        showNotification('This feature is not yet implemented.', 'error');
+                    }
+                });
+            });
+        }
+
+        async function renderNoteModal(projectId, type) {
+            const isCredit = type === 'credit';
+            const partiesPath = `/artifacts/${appId}/public/data/projects/${projectId}/project_parties`;
+            const partiesSnapshot = await getDocs(query(collection(db, partiesPath)));
+            const partiesOptions = partiesSnapshot.docs.map(doc => `<option value="${doc.data().name}">${doc.data().name}</option>`).join('');
+
+            modalContainer.innerHTML = `
+                <div class="modal"><div class="modal-content">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">${isCredit ? 'Create Credit Note' : 'Create Debit Note'}</h3>
+                    <form id="note-form" class="space-y-4">
+                        <select id="note-party" class="input-field" required><option value="" disabled selected>Select Party *</option>${partiesOptions}</select>
+                        <input type="number" id="note-amount" placeholder="Amount" step="0.01" class="input-field" required>
+                        <textarea id="note-desc" placeholder="Reason for note" class="input-field h-20" required></textarea>
+                        <div class="pt-4 flex flex-col space-y-2">
+                            <button type="submit" class="btn-primary">Save Note</button>
+                            <button id="close-note-modal" type="button" class="w-full px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancel</button>
+                        </div>
+                    </form>
+                </div></div>
+            `;
+            modalContainer.querySelector('#close-note-modal').addEventListener('click', () => modalContainer.innerHTML = '');
+            modalContainer.querySelector('#note-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const party = e.target['note-party'].value;
+                const amount = parseFloat(e.target['note-amount'].value);
+                const description = e.target['note-desc'].value;
+                if (!party || isNaN(amount) || amount <= 0) {
+                    showNotification("Please fill all fields correctly.", "error"); return;
+                }
+                const transactionsPath = `/artifacts/${appId}/public/data/projects/${projectId}/transactions`;
+                try {
+                    await addDoc(collection(db, transactionsPath), {
+                        type: isCredit ? 'in' : 'out',
+                        transactionSubType: isCredit ? 'credit_note' : 'debit_note',
+                        party, amount, description,
+                        status: 'approved',
+                        authorId: currentUser.uid,
+                        createdAt: serverTimestamp()
+                    });
+                    showNotification("Note recorded successfully!", "success");
+                    modalContainer.innerHTML = '';
+                } catch (error) { showNotification("Failed to record note.", "error"); }
+            });
+        }
+
+        async function renderOtherExpenseModal(projectId) {
+            const partiesPath = `/artifacts/${appId}/public/data/projects/${projectId}/project_parties`;
+            const partiesSnapshot = await getDocs(query(collection(db, partiesPath)));
+            const partiesOptions = partiesSnapshot.docs.map(doc => `<option value="${doc.data().name}">${doc.data().name}</option>`).join('');
+
+            modalContainer.innerHTML = `
+                <div class="modal">
+                    <div class="modal-content">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Record Other Expense</h3>
+                        <form id="expense-form" class="space-y-4">
+                            <select id="expense-party" class="input-field" required>
+                                <option value="" disabled selected>Paid To *</option>
+                                ${partiesOptions}
+                            </select>
+                            <input type="number" id="expense-amount" placeholder="Amount" step="0.01" class="input-field" required>
+                            <select id="expense-category" class="input-field">
+                                <option>Fuel</option><option>Food</option><option>Travel</option><option>Misc</option>
+                            </select>
+                            <textarea id="expense-desc" placeholder="Description" class="input-field h-20"></textarea>
+                            <div class="pt-4 flex flex-col space-y-2">
+                                <button type="submit" class="btn-primary">Save Expense</button>
+                                <button id="close-expense-modal" type="button" class="w-full px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            `;
+            modalContainer.querySelector('#close-expense-modal').addEventListener('click', () => modalContainer.innerHTML = '');
+            modalContainer.querySelector('#expense-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const party = e.target['expense-party'].value;
+                const amount = parseFloat(e.target['expense-amount'].value);
+                const category = e.target['expense-category'].value;
+                const description = e.target['expense-desc'].value;
+
+                if (!party || isNaN(amount) || amount <= 0) {
+                    showNotification("Please fill all required fields correctly.", "error"); return;
+                }
+
+                const transactionsPath = `/artifacts/${appId}/public/data/projects/${projectId}/transactions`;
+                try {
+                    await addDoc(collection(db, transactionsPath), {
+                        type: 'out',
+                        party: party,
+                        amount: amount,
+                        description: `Expense: ${category} - ${description}`,
+                        method: 'Cash',
+                        status: 'pending', // Add status for approval
+                        authorId: currentUser.uid,
+                        createdAt: serverTimestamp()
+                    });
+                    showNotification("Expense submitted for approval!", "success");
+                    modalContainer.innerHTML = '';
+                } catch (error) { showNotification("Failed to record expense.", "error"); }
+            });
+        }
+
+        async function renderPaymentModal(projectId, type) {
+            const isPaymentIn = type === 'in';
+            const partiesPath = `/artifacts/${appId}/public/data/projects/${projectId}/project_parties`;
+            const partiesSnapshot = await getDocs(query(collection(db, partiesPath)));
+            const partiesOptions = partiesSnapshot.docs.map(doc => `<option value="${doc.data().name}">${doc.data().name}</option>`).join('');
+
+            modalContainer.innerHTML = `
+                <div class="modal">
+                    <div class="modal-content">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">${isPaymentIn ? 'Record Payment In' : 'Record Payment Out'}</h3>
+                        <form id="payment-form" class="space-y-4">
+                            <select id="payment-party" class="input-field" required>
+                                <option value="" disabled selected>Select Party *</option>
+                                ${partiesOptions}
+                            </select>
+                            <input type="number" id="payment-amount" placeholder="Amount" step="0.01" class="input-field" required>
+                            <textarea id="payment-desc" placeholder="Description" class="input-field h-20"></textarea>
+                            <div class="flex justify-around">
+                                <label><input type="radio" name="payment-method" value="Cash" checked> Cash</label>
+                                <label><input type="radio" name="payment-method" value="Bank Transfer"> Bank</label>
+                                <label><input type="radio" name="payment-method" value="Cheque"> Cheque</label>
+                            </div>
+                             <div class="pt-4 flex flex-col space-y-2">
+                                <button type="submit" class="btn-primary">Save</button>
+                                <button id="close-payment-modal" type="button" class="w-full px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            `;
+
+            modalContainer.querySelector('#close-payment-modal').addEventListener('click', () => {
+                modalContainer.innerHTML = '';
+            });
+
+            modalContainer.querySelector('#payment-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const party = e.target['payment-party'].value;
+                const amount = parseFloat(e.target['payment-amount'].value);
+                const description = e.target['payment-desc'].value;
+                const method = e.target['payment-method'].value;
+
+                if (!party || isNaN(amount) || amount <= 0) {
+                    showNotification("Please fill all required fields correctly.", "error");
+                    return;
+                }
+
+                const transactionsPath = `/artifacts/${appId}/public/data/projects/${projectId}/transactions`;
+                try {
+                    await addDoc(collection(db, transactionsPath), {
+                        type: type,
+                        party,
+                        amount,
+                        description,
+                        method,
+                        status: 'approved', // Direct payments are auto-approved
+                        authorId: currentUser.uid,
+                        createdAt: serverTimestamp()
+                    });
+                    showNotification("Transaction recorded!", "success");
+                    modalContainer.innerHTML = '';
+                } catch (error) {
+                     showNotification("Failed to record transaction.", "error");
+                }
+            });
+        }
+        
+        // --- Initial Load ---
+        handleInitialAuth();
+
     </script>
-  </body>
+</body>
 </html>
