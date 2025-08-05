@@ -168,9 +168,7 @@
 </head>
 <body class="antialiased">
 
-    <!-- Main Application Container -->
     <div id="app-container">
-        <!-- Auth Screen -->
         <div id="auth-screen" class="min-h-screen flex items-center justify-center bg-gray-50 px-4">
             <div class="max-w-md w-full">
                 <div class="text-center mb-8">
@@ -178,12 +176,10 @@
                     <p class="text-gray-500 mt-2">Integrated Construction Management</p>
                 </div>
                 <div id="auth-container" class="auth-card">
-                    <!-- Login/Register forms will be injected here -->
-                </div>
+                    </div>
             </div>
         </div>
 
-        <!-- Main App Screen (hidden by default) -->
         <div id="main-app" class="hidden">
             <header class="bg-white shadow-sm sticky top-0 z-40">
                 <nav class="container mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center">
@@ -198,18 +194,14 @@
             </header>
             
             <main id="app-content" class="container mx-auto p-4 sm:p-6 lg:p-8">
-                <!-- Content (Dashboard or Project View) will be injected here -->
-            </main>
+                </main>
         </div>
     </div>
     
-    <!-- Modal Container -->
     <div id="modal-container"></div>
 
-    <!-- Notification Element -->
     <div id="notification"></div>
 
-    <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { 
@@ -1181,10 +1173,10 @@
                 </div>
             `;
              if (currentUserRole !== 'Site Supervisor') {
-                document.getElementById('add-project-btn').addEventListener('click', () => {
-                    renderAddProjectModal();
-                });
-            }
+                 document.getElementById('add-project-btn').addEventListener('click', () => {
+                     renderAddProjectModal();
+                 });
+             }
             const projectsGrid = document.getElementById('projects-grid');
             const projectsCollectionPath = `/artifacts/${appId}/public/data/projects`;
             const q = query(collection(db, projectsCollectionPath), where("members", "array-contains", currentUser.uid));
@@ -1280,6 +1272,7 @@
                     <button class="tab active" data-tab="party">Party</button>
                     <button class="tab" data-tab="transactions">Transactions</button>
                     <button class="tab" data-tab="site">Site</button>
+                    <button class="tab" data-tab="attendance">Attendance</button>
                     <button class="tab" data-tab="material">Material</button>
                 </div>
                 <div id="project-tab-content" class="pb-20"></div>
@@ -1312,6 +1305,8 @@
                 renderTransactionsTab(projectId, container);
             } else if (tabName === 'site') {
                 renderSiteTab(projectId, container);
+            } else if (tabName === 'attendance') {
+                renderAttendanceTab(projectId, container);
             } else if (tabName === 'material') {
                 renderMaterialTab(projectId, container);
             }
@@ -1801,18 +1796,105 @@
             });
         }
 
+        async function renderAttendanceTab(projectId, container) {
+            const currentDate = siteTabDate;
+            const dateString = currentDate.toISOString().split('T')[0];
+            const formattedDate = currentDate.toLocaleDateString('en-US', { day: '2-digit', month: 'short', weekday: 'short' });
+
+            container.innerHTML = `
+                <div class="flex justify-between items-center mb-6 max-w-md mx-auto">
+                    <button id="prev-day-btn" class="p-2 rounded-full hover:bg-gray-200">&lt;</button>
+                    <h2 id="attendance-date-display" class="text-lg font-semibold">${formattedDate}</h2>
+                    <button id="next-day-btn" class="p-2 rounded-full hover:bg-gray-200">&gt;</button>
+                </div>
+                <div id="attendance-form-container" class="max-w-md mx-auto">
+                    <div class="card p-6 space-y-4">
+                        <div class="text-center text-gray-500">Loading attendance...</div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('prev-day-btn').addEventListener('click', () => { 
+                siteTabDate.setDate(siteTabDate.getDate() - 1); 
+                renderAttendanceTab(projectId, container); 
+            });
+            document.getElementById('next-day-btn').addEventListener('click', () => { 
+                siteTabDate.setDate(siteTabDate.getDate() + 1); 
+                renderAttendanceTab(projectId, container); 
+            });
+
+            const formContainer = document.getElementById('attendance-form-container');
+            const attendanceDocPath = `/artifacts/${appId}/public/data/projects/${projectId}/attendance/${dateString}`;
+            const attendanceDocRef = doc(db, attendanceDocPath);
+
+            const saveAttendance = async (e) => {
+                const fieldName = e.target.name;
+                const value = parseInt(e.target.value, 10) || 0;
+                
+                try {
+                    await setDoc(attendanceDocRef, { [fieldName]: value, lastUpdated: serverTimestamp() }, { merge: true });
+                } catch (error) {
+                    console.error("Failed to save attendance:", error);
+                    showNotification("Failed to save attendance.", "error");
+                }
+            };
+
+            const docSnap = await getDoc(attendanceDocRef);
+            const data = docSnap.exists() ? docSnap.data() : { headMasons: 0, masons: 0, helpers: 0 };
+            
+            formContainer.innerHTML = `
+                <div class="card p-6 space-y-4">
+                    <div>
+                        <label for="head-masons" class="block text-sm font-medium text-gray-700">Head Masons</label>
+                        <input type="number" name="headMasons" id="head-masons" value="${data.headMasons || 0}" class="input-field mt-1" min="0">
+                    </div>
+                    <div>
+                        <label for="masons" class="block text-sm font-medium text-gray-700">Masons</label>
+                        <input type="number" name="masons" id="masons" value="${data.masons || 0}" class="input-field mt-1" min="0">
+                    </div>
+                    <div>
+                        <label for="helpers" class="block text-sm font-medium text-gray-700">Helpers</label>
+                        <input type="number" name="helpers" id="helpers" value="${data.helpers || 0}" class="input-field mt-1" min="0">
+                    </div>
+                    <p class="text-xs text-center text-gray-400 mt-4">Changes are saved automatically.</p>
+                </div>
+            `;
+
+            formContainer.querySelector('#head-masons').addEventListener('change', saveAttendance);
+            formContainer.querySelector('#masons').addEventListener('change', saveAttendance);
+            formContainer.querySelector('#helpers').addEventListener('change', saveAttendance);
+        }
+
         async function renderSiteTab(projectId, container) {
             const today = siteTabDate;
             const formattedDate = today.toLocaleDateString('en-US', { day: '2-digit', month: 'short', weekday: 'short' });
             const dateString = today.toISOString().split('T')[0];
-            
+
+            // Paths
             const movementsPath = `/artifacts/${appId}/public/data/projects/${projectId}/material_movements`;
+            const attendanceDocPath = `/artifacts/${appId}/public/data/projects/${projectId}/attendance/${dateString}`;
+
+            // Queries & Refs
             const receivedQuery = query(collection(db, movementsPath), where("date", "==", dateString), where("type", "==", "received"));
             const usedQuery = query(collection(db, movementsPath), where("date", "==", dateString), where("type", "==", "used"));
+            const attendanceDocRef = doc(db, attendanceDocPath);
 
-            const receivedSnapshot = await getDocs(receivedQuery);
-            const usedSnapshot = await getDocs(usedQuery);
+            // Fetch all data in parallel
+            const [receivedSnapshot, usedSnapshot, attendanceDoc] = await Promise.all([
+                getDocs(receivedQuery),
+                getDocs(usedQuery),
+                getDoc(attendanceDocRef)
+            ]);
 
+            // Calculate total staff from attendance
+            let totalStaff = 0;
+            if (attendanceDoc.exists()) {
+                const attendanceData = attendanceDoc.data();
+                totalStaff = (parseInt(attendanceData.headMasons, 10) || 0) +
+                             (parseInt(attendanceData.masons, 10) || 0) +
+                             (parseInt(attendanceData.helpers, 10) || 0);
+            }
+            
             container.innerHTML = `
                 <div class="flex justify-between items-center mb-4">
                     <button id="prev-day-btn" class="p-2 rounded-full hover:bg-gray-200">&lt;</button>
@@ -1821,7 +1903,7 @@
                 </div>
 
                 <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-                    <div class="card p-4 text-center bg-blue-50"><p class="text-sm text-blue-800">Site Staff</p><p class="text-2xl font-bold text-blue-900">0</p></div>
+                    <div class="card p-4 text-center bg-blue-50"><p class="text-sm text-blue-800">Site Staff</p><p class="text-2xl font-bold text-blue-900">${totalStaff}</p></div>
                     <div class="card p-4 text-center bg-green-50"><p class="text-sm text-green-800">Material Received</p><p class="text-2xl font-bold text-green-900">${receivedSnapshot.size}</p></div>
                     <div class="card p-4 text-center bg-red-50 col-span-2 md:col-span-1"><p class="text-sm text-red-800">Material Used</p><p class="text-2xl font-bold text-red-900">${usedSnapshot.size}</p></div>
                 </div>
@@ -2144,9 +2226,9 @@
                 </div>
                 <div id="transactions-list" class="space-y-3 mb-24">Loading transactions...</div>
                 <div class="fixed bottom-0 left-0 right-0 bg-white p-4 border-t shadow-lg flex justify-around items-center">
-                     <button id="payment-in-btn" class="text-green-600 font-bold py-2 px-6 rounded-lg">Payment In</button>
-                     <button id="add-transaction-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white h-12 w-12 rounded-full flex items-center justify-center text-2xl font-bold">+</button>
-                     <button id="payment-out-btn" class="text-red-600 font-bold py-2 px-6 rounded-lg">Payment Out</button>
+                       <button id="payment-in-btn" class="text-green-600 font-bold py-2 px-6 rounded-lg">Payment In</button>
+                       <button id="add-transaction-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white h-12 w-12 rounded-full flex items-center justify-center text-2xl font-bold">+</button>
+                       <button id="payment-out-btn" class="text-red-600 font-bold py-2 px-6 rounded-lg">Payment Out</button>
                 </div>
             `;
 
@@ -2439,7 +2521,7 @@
         }
         
         // --- Initial Load ---
-        handleInitialAuth();
+        renderLoginForm();
 
     </script>
 </body>
