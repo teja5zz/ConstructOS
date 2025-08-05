@@ -29,9 +29,16 @@
             font-weight: 600;
             transition: background-color: 0.3s ease;
             width: 100%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
         .btn-primary:hover {
             background-color: #4338ca;
+        }
+        .btn-primary:disabled {
+            background-color: #a5b4fc;
+            cursor: not-allowed;
         }
         .btn-google {
             background-color: #ffffff;
@@ -126,12 +133,14 @@
             height: 100%;
             width: 100%;
             z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .modal-content {
             position: relative;
-            top: 5rem;
             margin: auto;
-            padding: 1.25rem;
+            padding: 1.5rem;
             border-width: 1px;
             width: 100%;
             max-width: 28rem;
@@ -228,11 +237,17 @@
             getDocs,
             updateDoc
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { 
+            getStorage, 
+            ref, 
+            uploadBytes, 
+            getDownloadURL 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
         // --- App Configuration ---
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'constructos-mvp';
         const firebaseConfig = {
-            apiKey: "AIzaSyCecaWgVVhxYPdRoZsWwRfQVWS6a-usF1Q",
+            apiKey: "AIzaSyCecaWgVVhxYPdRoZsWwRfQVWS6a-usF1Q", // This is a public key
             authDomain: "constructos-5e87d.firebaseapp.com",
             projectId: "constructos-5e87d",
             storageBucket: "constructos-5e87d.appspot.com",
@@ -243,6 +258,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        const storage = getStorage(app);
 
         // --- State Management ---
         let currentUser = null;
@@ -268,7 +284,8 @@
 
         function showNotification(message, type = 'success') {
             notification.textContent = message;
-            notification.className = type === 'success' ? 'bg-success' : 'bg-error';
+            notification.className = 'fixed bottom-5 left-1/2 -translate-x-1/2 px-8 py-3 rounded-lg text-white font-semibold shadow-lg z-50';
+            notification.classList.add(type === 'success' ? 'bg-success' : 'bg-error');
             notification.classList.add('show');
             setTimeout(() => {
                 notification.classList.remove('show');
@@ -277,10 +294,18 @@
 
         // --- Gemini API Helper ---
         async function callGemini(prompt, retries = 3, delay = 1000) {
+            // IMPORTANT: REPLACE THIS EMPTY STRING WITH YOUR ACTUAL GEMINI API KEY
+            // For production, this key should be managed via a backend proxy or secure environment variables.
+            const apiKey = ""; 
+
+            if (!apiKey) {
+                console.error("Gemini API Key is missing. Please add it to the `callGemini` function.");
+                return "Error: AI functionality is not configured. An API key is required.";
+            }
+
             let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
             const payload = { contents: chatHistory };
-            const apiKey = ""; // API key is handled by the environment
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
 
             for (let i = 0; i < retries; i++) {
                 try {
@@ -1087,7 +1112,7 @@
                     <h2 class="text-xl font-bold mb-2">Expense Approvals</h2>
                     <div id="expense-approvals" class="space-y-3">Loading...</div>
                 </div>
-             `;
+               `;
             const materialApprovalsEl = document.getElementById('material-approvals');
             const expenseApprovalsEl = document.getElementById('expense-approvals');
 
@@ -1173,9 +1198,9 @@
                 </div>
             `;
              if (currentUserRole !== 'Site Supervisor') {
-                 document.getElementById('add-project-btn').addEventListener('click', () => {
-                     renderAddProjectModal();
-                 });
+                   document.getElementById('add-project-btn').addEventListener('click', () => {
+                       renderAddProjectModal();
+                   });
              }
             const projectsGrid = document.getElementById('projects-grid');
             const projectsCollectionPath = `/artifacts/${appId}/public/data/projects`;
@@ -1211,7 +1236,7 @@
                     <div class="modal-content">
                         <div class="mt-3 text-center">
                             <h3 class="text-lg leading-6 font-medium text-gray-900">Create New Project</h3>
-                            <form id="add-project-form" class="mt-2 px-7 py-3 space-y-4">
+                            <form id="add-project-form" class="mt-2 px-7 py-3 space-y-4 text-left">
                                 <input type="text" id="project-name" placeholder="Project Name" class="input-field" required>
                                 <textarea id="project-desc" placeholder="Project Description" class="input-field h-24"></textarea>
                                 <div class="items-center px-4 py-3">
@@ -1646,7 +1671,7 @@
             modalContainer.querySelector('#receive-material-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const items = [];
-                const itemNodes = itemsContainer.querySelectorAll('.flex');
+                const itemNodes = itemsContainer.querySelectorAll('.flex.gap-2.items-center');
                 itemNodes.forEach(node => {
                     const name = node.querySelector('.receive-item-name').value;
                     const quantity = node.querySelector('.receive-item-qty').value;
@@ -1697,9 +1722,9 @@
         function renderAddMaterialActionModal(projectId) {
             modalContainer.innerHTML = `
                 <div class="modal">
-                    <div class="modal-content">
-                         <button id="close-add-mat-modal" class="absolute top-2 right-4 text-2xl font-bold text-gray-500">&times;</button>
-                         <div class="p-4">
+                    <div class="modal-content max-w-sm">
+                          <button id="close-add-mat-modal" class="absolute top-2 right-4 text-2xl font-bold text-gray-500">&times;</button>
+                          <div class="p-4">
                             <h4 class="font-semibold text-gray-500 mb-2">Material</h4>
                             <div class="grid grid-cols-2 gap-3">
                                 <button data-action="request" class="transaction-type-btn">+ Request</button>
@@ -1709,7 +1734,7 @@
                                 <button data-action="subcon-issued" class="transaction-type-btn">+ Subcon Issued</button>
                                 <button data-action="transfer" class="transaction-type-btn">+ Material Transfer</button>
                             </div>
-                         </div>
+                          </div>
                     </div>
                 </div>
             `;
@@ -1768,10 +1793,10 @@
             modalContainer.querySelector('#usage-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const items = [];
-                const itemNodes = itemsContainer.querySelectorAll('.flex');
+                const itemNodes = itemsContainer.querySelectorAll('.flex.gap-2.items-center');
                 itemNodes.forEach(node => {
                     const name = node.querySelector('.usage-item-name').value;
-                    const quantity = node.querySelector('.request-item-qty').value;
+                    const quantity = node.querySelector('.usage-item-qty').value;
                     if (name && quantity) items.push({ name, quantity });
                 });
 
@@ -1918,8 +1943,7 @@
 
                 <div class="mb-6">
                     <div class="flex justify-between items-center mb-2">
-                        <h3 class="text-xl font-bold">Ongoing Tasks</h3>
-                        <a href="#" class="text-sm text-indigo-600">View All</a>
+                        <h3 class="text-xl font-bold">Daily Progress Report (DPR)</h3>
                     </div>
                     <div id="dpr-list" class="space-y-3">Loading reports...</div>
                 </div>
@@ -1939,7 +1963,7 @@
             const dprQuery = query(collection(db, logsCollectionPath), where("date", "==", dateString));
             const dprUnsub = onSnapshot(dprQuery, (snapshot) => {
                 if (snapshot.empty) {
-                    dprListEl.innerHTML = `<div class="card p-6 text-center text-gray-500">No progress today.</div>`;
+                    dprListEl.innerHTML = `<div class="card p-6 text-center text-gray-500">No DPR for this day.</div>`;
                     return;
                 }
                 dprListEl.innerHTML = snapshot.docs.map(doc => `<div class="card p-4"><p class="text-gray-700 whitespace-pre-wrap">${doc.data().notes}</p><p class="text-xs text-gray-400 mt-2">By: ${doc.data().authorEmail}</p></div>`).join('');
@@ -1956,8 +1980,18 @@
                 }
                 siteFilesListEl.innerHTML = snapshot.docs.map(doc => {
                     const file = doc.data();
-                    const icon = file.fileType === 'Photo' ? '📷' : (file.fileType === 'Plan' ? '🗺️' : '📄');
-                    return `<div class="card p-3 text-center"><div class="text-3xl mb-2">${icon}</div><p class="text-sm truncate font-medium">${file.fileName}</p></div>`;
+                    let icon;
+                    if (file.fileType.startsWith('image/')) {
+                        icon = '📷';
+                    } else if (file.fileType === 'application/pdf') {
+                        icon = '📄';
+                    } else {
+                        icon = '📎';
+                    }
+                    return `<a href="${file.downloadURL}" target="_blank" rel="noopener noreferrer" class="card p-3 text-center block hover:!bg-indigo-50">
+                                <div class="text-3xl mb-2">${icon}</div>
+                                <p class="text-sm truncate font-medium">${file.fileName}</p>
+                            </a>`;
                 }).join('');
             });
             currentUnsubscribes.push(filesUnsub);
@@ -1969,15 +2003,13 @@
                     <div class="modal-content">
                         <h3 class="text-lg font-medium text-gray-900 mb-4">Upload Site File</h3>
                         <form id="upload-site-file-form" class="space-y-4">
-                            <p class="text-sm text-gray-600">This will add a record for the file on ${siteTabDate.toLocaleDateString()}.</p>
-                            <input type="text" id="site-file-name" placeholder="File Name (e.g., east-wing-photo.jpg)" class="input-field" required>
-                            <select id="site-file-type" class="input-field" required>
-                                <option value="Photo">Photo</option>
-                                <option value="Plan">Plan</option>
-                                <option value="Document">Document</option>
-                            </select>
+                            <p class="text-sm text-gray-600">This will add a file record for ${siteTabDate.toLocaleDateString()}.</p>
+                            <input type="file" id="site-file-input" class="input-field" required>
                             <div class="pt-4 flex flex-col space-y-2">
-                                <button type="submit" class="btn-primary">Save Record</button>
+                                <button type="submit" class="btn-primary">
+                                    Upload & Save
+                                    <div id="upload-spinner" class="spinner hidden ml-2" style="width: 16px; height: 16px; border-width: 2px;"></div>
+                                </button>
                                 <button id="close-upload-modal" type="button" class="w-full px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancel</button>
                             </div>
                         </form>
@@ -1987,22 +2019,47 @@
             modalContainer.querySelector('#close-upload-modal').addEventListener('click', () => modalContainer.innerHTML = '');
             modalContainer.querySelector('#upload-site-file-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const fileName = e.target['site-file-name'].value;
-                const fileType = e.target['site-file-type'].value;
+                const file = e.target['site-file-input'].files[0];
+                if (!file) {
+                    showNotification("Please select a file to upload.", "error");
+                    return;
+                }
+                
+                const submitBtn = e.target.querySelector('button[type="submit"]');
+                const spinner = e.target.querySelector('#upload-spinner');
+                submitBtn.disabled = true;
+                spinner.classList.remove('hidden');
+
                 const dateString = siteTabDate.toISOString().split('T')[0];
-                const siteFilesPath = `/artifacts/${appId}/public/data/projects/${projectId}/site_files`;
+                const storagePath = `projects/${projectId}/site_files/${dateString}/${Date.now()}_${file.name}`;
+                const storageRef = ref(storage, storagePath);
+
                 try {
+                    // Upload file to Firebase Storage
+                    await uploadBytes(storageRef, file);
+                    // Get download URL
+                    const downloadURL = await getDownloadURL(storageRef);
+
+                    // Save metadata to Firestore
+                    const siteFilesPath = `/artifacts/${appId}/public/data/projects/${projectId}/site_files`;
                     await addDoc(collection(db, siteFilesPath), {
-                        fileName, fileType, date: dateString,
+                        fileName: file.name,
+                        fileType: file.type,
+                        date: dateString,
+                        storagePath: storagePath,
+                        downloadURL: downloadURL,
                         uploaderId: currentUser.uid,
                         uploaderEmail: currentUser.email,
                         createdAt: serverTimestamp()
                     });
-                    showNotification("File record saved!", "success");
+                    
+                    showNotification("File uploaded successfully!", "success");
                     modalContainer.innerHTML = '';
                 } catch(error) {
-                    showNotification("Failed to save file record.", "error");
-                    console.error("Error saving file record:", error);
+                    showNotification("Failed to upload file.", "error");
+                    console.error("Error uploading file:", error);
+                    submitBtn.disabled = false;
+                    spinner.classList.add('hidden');
                 }
             });
         }
@@ -2014,10 +2071,16 @@
                         <h3 class="text-lg font-medium text-gray-900 mb-4">New Daily Progress Report</h3>
                         <form id="add-dpr-form" class="space-y-4">
                             <input type="date" id="dpr-date" class="input-field" required>
-                            <textarea id="dpr-notes" placeholder="Notes on work performed, weather, etc." class="input-field h-32" required></textarea>
-                            <div class="pt-4 flex flex-col space-y-2">
-                                <button type="submit" class="btn-primary">Save Report</button>
-                                <button id="close-dpr-modal" type="button" class="w-full px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancel</button>
+                            <textarea id="dpr-notes" placeholder="Enter raw notes, work details, weather conditions, delays, materials used, etc. then click 'Generate with AI' for a clean summary." class="input-field h-32" required></textarea>
+                            
+                            <div class="pt-2 flex flex-col sm:flex-row-reverse gap-2">
+                                <button type="submit" class="btn-primary w-full sm:w-auto">Save Report</button>
+                                <button id="generate-dpr-ai" type="button" class="w-full sm:w-auto px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 flex items-center justify-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.09 9a3 3 0 0 1 5.82 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+                                    Generate with AI
+                                    <div id="ai-spinner" class="spinner hidden" style="width: 16px; height: 16px; border-width: 2px;"></div>
+                                </button>
+                                <button id="close-dpr-modal" type="button" class="w-full sm:w-auto mt-2 sm:mt-0 px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancel</button>
                             </div>
                         </form>
                     </div>
@@ -2027,6 +2090,45 @@
             dateInput.value = siteTabDate.toISOString().split('T')[0];
 
             modalContainer.querySelector('#close-dpr-modal').addEventListener('click', () => modalContainer.innerHTML = '');
+            
+            // --- AI Generation Logic ---
+            modalContainer.querySelector('#generate-dpr-ai').addEventListener('click', async (e) => {
+                const button = e.currentTarget;
+                const spinner = document.getElementById('ai-spinner');
+                const notesArea = document.getElementById('dpr-notes');
+                const rawNotes = notesArea.value;
+
+                if (rawNotes.trim().length < 10) {
+                    showNotification("Please enter some notes first.", "error");
+                    return;
+                }
+
+                button.disabled = true;
+                notesArea.disabled = true;
+                spinner.classList.remove('hidden');
+
+                const prompt = `
+                    Act as a construction project site supervisor.
+                    Summarize the following daily work notes into a clear, professional Daily Progress Report (DPR).
+                    Format the output using markdown. Use headings like "Work Performed", "Materials Used", "Site Conditions", and "Issues/Delays".
+                    Be concise and use bullet points where appropriate.
+                    
+                    Here are the notes:
+                    ---
+                    ${rawNotes}
+                    ---
+                `;
+
+                const aiSummary = await callGemini(prompt);
+                
+                // Clean up the response from markdown code block markers
+                notesArea.value = aiSummary.replace(/```markdown\n|```/g, '').trim();
+
+                button.disabled = false;
+                notesArea.disabled = false;
+                spinner.classList.add('hidden');
+            });
+
             modalContainer.querySelector('#add-dpr-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const logDate = e.target['dpr-date'].value;
@@ -2224,11 +2326,20 @@
                         <p id="summary-total-out" class="text-2xl font-bold text-red-600">₹0.00</p>
                     </div>
                 </div>
+
+                <div class="mb-6">
+                    <button id="get-financial-insights-btn" class="w-full btn-primary !bg-gray-700 hover:!bg-gray-800 flex items-center justify-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.09 9a3 3 0 0 1 5.82 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+                        Get AI Financial Insights
+                    </button>
+                    <div id="ai-insights-container" class="card p-4 mt-4 hidden bg-indigo-50 border border-indigo-200"></div>
+                </div>
+
                 <div id="transactions-list" class="space-y-3 mb-24">Loading transactions...</div>
                 <div class="fixed bottom-0 left-0 right-0 bg-white p-4 border-t shadow-lg flex justify-around items-center">
-                       <button id="payment-in-btn" class="text-green-600 font-bold py-2 px-6 rounded-lg">Payment In</button>
-                       <button id="add-transaction-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white h-12 w-12 rounded-full flex items-center justify-center text-2xl font-bold">+</button>
-                       <button id="payment-out-btn" class="text-red-600 font-bold py-2 px-6 rounded-lg">Payment Out</button>
+                        <button id="payment-in-btn" class="text-green-600 font-bold py-2 px-6 rounded-lg">Payment In</button>
+                        <button id="add-transaction-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white h-12 w-12 rounded-full flex items-center justify-center text-2xl font-bold">+</button>
+                        <button id="payment-out-btn" class="text-red-600 font-bold py-2 px-6 rounded-lg">Payment Out</button>
                 </div>
             `;
 
@@ -2240,19 +2351,27 @@
             const balanceEl = document.getElementById('summary-balance');
             const totalInEl = document.getElementById('summary-total-in');
             const totalOutEl = document.getElementById('summary-total-out');
+            const insightsBtn = document.getElementById('get-financial-insights-btn');
+            const insightsContainer = document.getElementById('ai-insights-container');
 
             const transactionsPath = `/artifacts/${appId}/public/data/projects/${projectId}/transactions`;
             const q = query(collection(db, transactionsPath), where("status", "==", "approved"));
+            
+            let allTransactionsData = []; // Store transaction data for AI analysis
 
             const unsub = onSnapshot(q, (snapshot) => {
                 let totalIn = 0;
                 let totalOut = 0;
+                allTransactionsData = []; // Reset on each update
 
                 if (snapshot.empty) {
                     transactionsListEl.innerHTML = `<div class="card p-6 text-center text-gray-500">No approved transactions yet.</div>`;
+                    insightsBtn.disabled = true;
                 } else {
+                    insightsBtn.disabled = false;
                     transactionsListEl.innerHTML = snapshot.docs.map(doc => {
                         const tx = doc.data();
+                        allTransactionsData.push(tx); // Collect data for AI
                         const amount = parseFloat(tx.amount) || 0;
                         if (tx.type === 'in') {
                             totalIn += amount;
@@ -2286,14 +2405,46 @@
                 totalOutEl.textContent = `₹${totalOut.toFixed(2)}`;
             });
             currentUnsubscribes.push(unsub);
+            
+            // --- AI Insights Logic ---
+            insightsBtn.addEventListener('click', async () => {
+                insightsContainer.classList.remove('hidden');
+                insightsContainer.innerHTML = `<div class="flex items-center gap-2"><div class="spinner"></div><span>Generating financial insights...</span></div>`;
+                
+                const transactionsSummary = allTransactionsData.map(tx => 
+                    `- Type: ${tx.type}, Party: ${tx.party}, Amount: ${tx.amount}, Description: ${tx.description || 'N/A'}`
+                ).join('\n');
+
+                const prompt = `
+                    You are a financial analyst for a construction company. Based on the following transaction list for a single project, provide a brief analysis in markdown format. 
+                    Your analysis should include:
+                    1.  A heading "Financial Snapshot" with a quick summary of total income, total expenditure, and the current balance.
+                    2.  A heading "Key Observations" with bullet points highlighting the top 3-4 expense categories or parties.
+                    3.  A heading "Potential Risks or Recommendations" with one or two bullet points suggesting areas for cost control or noting potential cash flow issues.
+                    Be professional and data-driven.
+                    
+                    Here is the transaction data:
+                    ---
+                    ${transactionsSummary}
+                    ---
+                `;
+
+                const aiInsights = await callGemini(prompt);
+                const formattedInsights = aiInsights.replace(/```markdown\n|```/g, '').trim()
+                                                    .replace(/### (.*)/g, '<h3 class="text-lg font-semibold mt-3 mb-1">$1</h3>')
+                                                    .replace(/## (.*)/g, '<h2 class="text-xl font-bold mt-4 mb-2">$1</h2>')
+                                                    .replace(/\* (.*)/g, '<li class="ml-4 list-disc">$1</li>');
+
+                insightsContainer.innerHTML = formattedInsights;
+            });
         }
         
         function renderAddTransactionModal(projectId) {
             modalContainer.innerHTML = `
                 <div class="modal">
-                    <div class="modal-content">
+                    <div class="modal-content max-w-lg">
                          <button id="close-add-tx-modal" class="absolute top-2 right-4 text-2xl font-bold text-gray-500">&times;</button>
-                         <div class="p-4">
+                          <div class="p-4">
                             <h4 class="font-semibold text-gray-500 mb-2">Payment</h4>
                             <div class="grid grid-cols-2 gap-3">
                                 <button data-action="payment-out" class="transaction-type-btn">Payment Out</button>
@@ -2318,7 +2469,7 @@
                                 <button data-action="i-paid" class="transaction-type-btn">I Paid</button>
                                 <button data-action="i-received" class="transaction-type-btn">I Received</button>
                             </div>
-                         </div>
+                          </div>
                     </div>
                 </div>
             `;
