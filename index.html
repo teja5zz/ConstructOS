@@ -331,7 +331,7 @@
                 const userDoc = await getDoc(userDocRef);
                 if (userDoc.exists()) {
                     currentUserRole = userDoc.data().role;
-                } else {
+                } else if (!user.isAnonymous) {
                     // Create a profile for new Google sign-in users
                     currentUserRole = 'Project Manager'; // Default role
                     await setDoc(userDocRef, {
@@ -340,7 +340,7 @@
                         createdAt: serverTimestamp()
                     });
                 }
-                userEmailSpan.textContent = `${user.email} (${currentUserRole})`;
+                userEmailSpan.textContent = user.isAnonymous ? 'Anonymous User' : `${user.email} (${currentUserRole})`;
                 authScreen.classList.add('hidden');
                 mainApp.classList.remove('hidden');
                 renderDashboard();
@@ -353,11 +353,6 @@
                 renderLoginForm();
             }
         });
-        
-        async function handleInitialAuth() {
-            // This function is primarily for handling special auth tokens in certain environments.
-            // For standard web deployment, onAuthStateChanged handles the initial user state.
-        }
         
         logoutButton.addEventListener('click', () => signOut(auth));
 
