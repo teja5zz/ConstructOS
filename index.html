@@ -292,54 +292,6 @@
             }, 3000);
         }
 
-        // --- Gemini API Helper ---
-        async function callGemini(prompt, retries = 3, delay = 1000) {
-            // IMPORTANT: REPLACE THIS EMPTY STRING WITH YOUR ACTUAL GEMINI API KEY
-            // For production, this key should be managed via a backend proxy or secure environment variables.
-            const apiKey = ""; 
-
-            if (!apiKey) {
-                console.error("Gemini API Key is missing. Please add it to the `callGemini` function.");
-                return "Error: AI functionality is not configured. An API key is required.";
-            }
-
-            let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
-            const payload = { contents: chatHistory };
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
-
-            for (let i = 0; i < retries; i++) {
-                try {
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-
-                    const result = await response.json();
-                    
-                    if (result.candidates && result.candidates.length > 0 &&
-                        result.candidates[0].content && result.candidates[0].content.parts &&
-                        result.candidates[0].content.parts.length > 0) {
-                        return result.candidates[0].content.parts[0].text;
-                    } else {
-                        throw new Error("Invalid response structure from Gemini API");
-                    }
-                } catch (error) {
-                    console.error(`Attempt ${i + 1} failed:`, error);
-                    if (i < retries - 1) {
-                        await new Promise(res => setTimeout(res, delay));
-                        delay *= 2; // Exponential backoff
-                    } else {
-                        return "Error: Could not get a response from the AI. Please try again.";
-                    }
-                }
-            }
-        }
-
         // --- Authentication Logic ---
         onAuthStateChanged(auth, async (user) => {
             if (user) {
@@ -769,13 +721,17 @@
             const projectsSnapshot = await getDocs(projectsQuery);
 
             let usageByProject = {};
+            
+            const movementQueries = projectsSnapshot.docs.map(projectDoc => {
+                const movementsPath = `/artifacts/${appId}/public/data/projects/${projectDoc.id}/material_movements`;
+                return getDocs(query(collection(db, movementsPath)));
+            });
 
-            for (const projectDoc of projectsSnapshot.docs) {
-                const projectId = projectDoc.id;
+            const allMovementsSnapshots = await Promise.all(movementQueries);
+
+            allMovementsSnapshots.forEach((movementsSnapshot, index) => {
+                const projectDoc = projectsSnapshot.docs[index];
                 const projectName = projectDoc.data().name;
-                const movementsPath = `/artifacts/${appId}/public/data/projects/${projectId}/material_movements`;
-                const movementsQuery = query(collection(db, movementsPath));
-                const movementsSnapshot = await getDocs(movementsQuery);
 
                 if (!movementsSnapshot.empty) {
                     movementsSnapshot.forEach(moveDoc => {
@@ -795,7 +751,8 @@
                         });
                     });
                 }
-            }
+            });
+
 
             if (Object.keys(usageByProject).length === 0) {
                 summaryEl.innerHTML = `<div class="card p-6 text-center text-gray-500">This material has not been used in any project.</div>`;
@@ -872,14 +829,16 @@
 
             let financialDataByProject = {};
             
-            for (const projectDoc of projectsSnapshot.docs) {
-                const projectId = projectDoc.id;
-                const projectName = projectDoc.data().name;
-                const transactionsPath = `/artifacts/${appId}/public/data/projects/${projectId}/transactions`;
-                const transactionsQuery = query(collection(db, transactionsPath), where("party", "==", partyName));
-                const transactionsSnapshot = await getDocs(transactionsQuery);
+            const transactionQueries = projectsSnapshot.docs.map(projectDoc => {
+                const transactionsPath = `/artifacts/${appId}/public/data/projects/${projectDoc.id}/transactions`;
+                return getDocs(query(collection(db, transactionsPath), where("party", "==", partyName)));
+            });
 
+            const allTransactionsSnapshots = await Promise.all(transactionQueries);
+
+            allTransactionsSnapshots.forEach((transactionsSnapshot, index) => {
                 if (!transactionsSnapshot.empty) {
+                    const projectName = projectsSnapshot.docs[index].data().name;
                     financialDataByProject[projectName] = { totalIn: 0, totalOut: 0 };
                     transactionsSnapshot.forEach(txDoc => {
                         const tx = txDoc.data();
@@ -891,7 +850,7 @@
                         }
                     });
                 }
-            }
+            });
 
             if (Object.keys(financialDataByProject).length === 0) {
                 summaryEl.innerHTML = `<div class="card p-6 text-center text-gray-500">No transactions found for this party in any project.</div>`;
@@ -1078,15 +1037,17 @@
             const todayString = new Date().toISOString().split('T')[0];
             let allActivities = [];
 
-            for (const projectDoc of projectsSnapshot.docs) {
-                const projectName = projectDoc.data().name;
+            const logPromises = projectsSnapshot.docs.map(projectDoc => {
                 const logsPath = `/artifacts/${appId}/public/data/projects/${projectDoc.id}/daily_logs`;
                 const logsQuery = query(collection(db, logsPath), where("date", "==", todayString));
-                const logsSnapshot = await getDocs(logsQuery);
-                logsSnapshot.forEach(logDoc => {
-                    allActivities.push({ ...logDoc.data(), projectName });
+                return getDocs(logsQuery).then(logsSnapshot => {
+                    logsSnapshot.forEach(logDoc => {
+                        allActivities.push({ ...logDoc.data(), projectName: projectDoc.data().name });
+                    });
                 });
-            }
+            });
+
+            await Promise.all(logPromises);
 
             if (allActivities.length === 0) {
                 activityFeedEl.innerHTML = `<div class="card p-6 text-center text-gray-500">No activity recorded today.</div>`;
@@ -1129,7 +1090,7 @@
             let allRequests = [];
             let allExpenses = [];
 
-            for (const projectDoc of projectsSnapshot.docs) {
+            const approvalPromises = projectsSnapshot.docs.map(async (projectDoc) => {
                 const projectName = projectDoc.data().name;
                 const projectId = projectDoc.id;
 
@@ -1142,7 +1103,9 @@
                 const expensesQuery = query(collection(db, expensesPath), where("status", "==", "pending"));
                 const expensesSnapshot = await getDocs(expensesQuery);
                 expensesSnapshot.forEach(doc => allExpenses.push({ ...doc.data(), id: doc.id, projectName, projectId }));
-            }
+            });
+
+            await Promise.all(approvalPromises);
 
             materialApprovalsEl.innerHTML = allRequests.length > 0 ? allRequests.map(req => `
                 <div class="card p-4">
@@ -1198,9 +1161,9 @@
                 </div>
             `;
              if (currentUserRole !== 'Site Supervisor') {
-                   document.getElementById('add-project-btn').addEventListener('click', () => {
-                       renderAddProjectModal();
-                   });
+                  document.getElementById('add-project-btn').addEventListener('click', () => {
+                      renderAddProjectModal();
+                  });
              }
             const projectsGrid = document.getElementById('projects-grid');
             const projectsCollectionPath = `/artifacts/${appId}/public/data/projects`;
@@ -1240,7 +1203,10 @@
                                 <input type="text" id="project-name" placeholder="Project Name" class="input-field" required>
                                 <textarea id="project-desc" placeholder="Project Description" class="input-field h-24"></textarea>
                                 <div class="items-center px-4 py-3">
-                                    <button type="submit" class="btn-primary">Create Project</button>
+                                    <button type="submit" class="btn-primary">
+                                        Create Project
+                                        <div class="spinner hidden ml-2" style="width: 16px; height: 16px; border-width: 2px;"></div>
+                                    </button>
                                     <button id="close-modal-btn" type="button" class="mt-2 w-full px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancel</button>
                                 </div>
                             </form>
@@ -1255,6 +1221,11 @@
 
             modalContainer.querySelector('#add-project-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
+                const submitBtn = e.target.querySelector('button[type="submit"]');
+                const spinner = submitBtn.querySelector('.spinner');
+                submitBtn.disabled = true;
+                spinner.classList.remove('hidden');
+
                 const name = e.target['project-name'].value;
                 const description = e.target['project-desc'].value;
                 
@@ -1272,6 +1243,8 @@
                 } catch (error) {
                     console.error("Error creating project:", error);
                     showNotification("Failed to create project.", "error");
+                    submitBtn.disabled = false;
+                    spinner.classList.add('hidden');
                 }
             });
         }
@@ -2071,14 +2044,12 @@
                         <h3 class="text-lg font-medium text-gray-900 mb-4">New Daily Progress Report</h3>
                         <form id="add-dpr-form" class="space-y-4">
                             <input type="date" id="dpr-date" class="input-field" required>
-                            <textarea id="dpr-notes" placeholder="Enter raw notes, work details, weather conditions, delays, materials used, etc. then click 'Generate with AI' for a clean summary." class="input-field h-32" required></textarea>
+                            <textarea id="dpr-notes" placeholder="Enter the complete daily progress report, including work performed, materials used, site conditions, etc." class="input-field h-48" required></textarea>
                             
                             <div class="pt-2 flex flex-col sm:flex-row-reverse gap-2">
-                                <button type="submit" class="btn-primary w-full sm:w-auto">Save Report</button>
-                                <button id="generate-dpr-ai" type="button" class="w-full sm:w-auto px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 flex items-center justify-center gap-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.09 9a3 3 0 0 1 5.82 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
-                                    Generate with AI
-                                    <div id="ai-spinner" class="spinner hidden" style="width: 16px; height: 16px; border-width: 2px;"></div>
+                                <button type="submit" class="btn-primary w-full sm:w-auto">
+                                    Save Report
+                                    <div class="spinner hidden ml-2" style="width: 16px; height: 16px; border-width: 2px;"></div>
                                 </button>
                                 <button id="close-dpr-modal" type="button" class="w-full sm:w-auto mt-2 sm:mt-0 px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancel</button>
                             </div>
@@ -2091,46 +2062,13 @@
 
             modalContainer.querySelector('#close-dpr-modal').addEventListener('click', () => modalContainer.innerHTML = '');
             
-            // --- AI Generation Logic ---
-            modalContainer.querySelector('#generate-dpr-ai').addEventListener('click', async (e) => {
-                const button = e.currentTarget;
-                const spinner = document.getElementById('ai-spinner');
-                const notesArea = document.getElementById('dpr-notes');
-                const rawNotes = notesArea.value;
-
-                if (rawNotes.trim().length < 10) {
-                    showNotification("Please enter some notes first.", "error");
-                    return;
-                }
-
-                button.disabled = true;
-                notesArea.disabled = true;
-                spinner.classList.remove('hidden');
-
-                const prompt = `
-                    Act as a construction project site supervisor.
-                    Summarize the following daily work notes into a clear, professional Daily Progress Report (DPR).
-                    Format the output using markdown. Use headings like "Work Performed", "Materials Used", "Site Conditions", and "Issues/Delays".
-                    Be concise and use bullet points where appropriate.
-                    
-                    Here are the notes:
-                    ---
-                    ${rawNotes}
-                    ---
-                `;
-
-                const aiSummary = await callGemini(prompt);
-                
-                // Clean up the response from markdown code block markers
-                notesArea.value = aiSummary.replace(/```markdown\n|```/g, '').trim();
-
-                button.disabled = false;
-                notesArea.disabled = false;
-                spinner.classList.add('hidden');
-            });
-
             modalContainer.querySelector('#add-dpr-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
+                const submitBtn = e.target.querySelector('button[type="submit"]');
+                const spinner = submitBtn.querySelector('.spinner');
+                submitBtn.disabled = true;
+                spinner.classList.remove('hidden');
+
                 const logDate = e.target['dpr-date'].value;
                 const logNotes = e.target['dpr-notes'].value;
                 const logsCollectionPath = `/artifacts/${appId}/public/data/projects/${projectId}/daily_logs`;
@@ -2146,11 +2084,13 @@
                     modalContainer.innerHTML = '';
                 } catch (error) {
                     showNotification("Failed to save DPR.", "error");
+                    submitBtn.disabled = false;
+                    spinner.classList.add('hidden');
                 }
             });
         }
 
-        function renderPartyTab(projectId, container) {
+        async function renderPartyTab(projectId, container) {
             container.innerHTML = `
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-xl font-bold">Project Parties</h2>
@@ -2169,57 +2109,62 @@
             const transactionsPath = `/artifacts/${appId}/public/data/projects/${projectId}/transactions`;
 
             const partiesQuery = query(collection(db, partiesPath));
-            const unsubParties = onSnapshot(partiesQuery, (partiesSnapshot) => {
-                const transactionsQuery = query(collection(db, transactionsPath));
-                const unsubTransactions = onSnapshot(transactionsQuery, (transactionsSnapshot) => {
-                    const transactionsByParty = {};
-                    transactionsSnapshot.docs.forEach(doc => {
-                        const tx = doc.data();
-                        if (!transactionsByParty[tx.party]) {
-                            transactionsByParty[tx.party] = { totalIn: 0, totalOut: 0 };
-                        }
-                        const amount = parseFloat(tx.amount) || 0;
-                        if (tx.type === 'in') {
-                            transactionsByParty[tx.party].totalIn += amount;
-                        } else {
-                            transactionsByParty[tx.party].totalOut += amount;
-                        }
-                    });
+            const transactionsQuery = query(collection(db, transactionsPath));
 
-                    if (partiesSnapshot.empty) {
-                        partiesListEl.innerHTML = `<div class="card p-6 text-center text-gray-500">No parties added yet.</div>`;
-                        return;
+            try {
+                const [partiesSnapshot, transactionsSnapshot] = await Promise.all([
+                    getDocs(partiesQuery),
+                    getDocs(transactionsQuery)
+                ]);
+
+                const transactionsByParty = {};
+                transactionsSnapshot.docs.forEach(doc => {
+                    const tx = doc.data();
+                    if (!transactionsByParty[tx.party]) {
+                        transactionsByParty[tx.party] = { totalIn: 0, totalOut: 0 };
+                    }
+                    const amount = parseFloat(tx.amount) || 0;
+                    if (tx.type === 'in') {
+                        transactionsByParty[tx.party].totalIn += amount;
+                    } else {
+                        transactionsByParty[tx.party].totalOut += amount;
+                    }
+                });
+
+                if (partiesSnapshot.empty) {
+                    partiesListEl.innerHTML = `<div class="card p-6 text-center text-gray-500">No parties added yet.</div>`;
+                    return;
+                }
+
+                partiesListEl.innerHTML = partiesSnapshot.docs.map(doc => {
+                    const party = doc.data();
+                    const partyName = party.name;
+                    const summary = transactionsByParty[partyName] || { totalIn: 0, totalOut: 0 };
+                    const balance = summary.totalOut - summary.totalIn;
+                    
+                    let balanceText = '';
+                    if (balance > 0) {
+                        balanceText = `<p class="font-bold text-red-600">₹${balance.toFixed(2)} To Pay</p>`;
+                    } else if (balance < 0) {
+                         balanceText = `<p class="font-bold text-green-600">₹${Math.abs(balance).toFixed(2)} Advance</p>`;
                     }
 
-                    partiesListEl.innerHTML = partiesSnapshot.docs.map(doc => {
-                        const party = doc.data();
-                        const partyName = party.name;
-                        const summary = transactionsByParty[partyName] || { totalIn: 0, totalOut: 0 };
-                        const balance = summary.totalOut - summary.totalIn;
-                        
-                        let balanceText = '';
-                        if (balance > 0) {
-                            balanceText = `<p class="font-bold text-red-600">₹${balance.toFixed(2)} To Pay</p>`;
-                        } else if (balance < 0) {
-                             balanceText = `<p class="font-bold text-green-600">₹${Math.abs(balance).toFixed(2)} Advance</p>`;
-                        }
-
-                        return `
-                            <div class="card p-4 flex justify-between items-center">
-                                <div>
-                                    <p class="font-semibold text-lg">${partyName}</p>
-                                    <p class="text-sm text-gray-500">${party.role}</p>
-                                </div>
-                                <div>
-                                    ${balanceText}
-                                </div>
+                    return `
+                        <div class="card p-4 flex justify-between items-center">
+                            <div>
+                                <p class="font-semibold text-lg">${partyName}</p>
+                                <p class="text-sm text-gray-500">${party.role}</p>
                             </div>
-                        `;
-                    }).join('');
-                });
-                currentUnsubscribes.push(unsubTransactions);
-            });
-            currentUnsubscribes.push(unsubParties);
+                            <div>
+                                ${balanceText}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error("Error loading party tab:", error);
+                partiesListEl.innerHTML = `<div class="card p-6 text-center text-red-500">Error loading parties.</div>`;
+            }
         }
 
         async function renderAddPartyToProjectModal(projectId) {
@@ -2266,6 +2211,7 @@
                     }
                     showNotification("Parties added to project!", "success");
                     modalContainer.innerHTML = '';
+                    renderPartyTab(projectId, document.getElementById('project-tab-content')); // Refresh the tab
                 } catch(error) {
                     showNotification("Failed to add parties.", "error");
                 }
@@ -2327,14 +2273,6 @@
                     </div>
                 </div>
 
-                <div class="mb-6">
-                    <button id="get-financial-insights-btn" class="w-full btn-primary !bg-gray-700 hover:!bg-gray-800 flex items-center justify-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.09 9a3 3 0 0 1 5.82 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
-                        Get AI Financial Insights
-                    </button>
-                    <div id="ai-insights-container" class="card p-4 mt-4 hidden bg-indigo-50 border border-indigo-200"></div>
-                </div>
-
                 <div id="transactions-list" class="space-y-3 mb-24">Loading transactions...</div>
                 <div class="fixed bottom-0 left-0 right-0 bg-white p-4 border-t shadow-lg flex justify-around items-center">
                         <button id="payment-in-btn" class="text-green-600 font-bold py-2 px-6 rounded-lg">Payment In</button>
@@ -2351,27 +2289,19 @@
             const balanceEl = document.getElementById('summary-balance');
             const totalInEl = document.getElementById('summary-total-in');
             const totalOutEl = document.getElementById('summary-total-out');
-            const insightsBtn = document.getElementById('get-financial-insights-btn');
-            const insightsContainer = document.getElementById('ai-insights-container');
 
             const transactionsPath = `/artifacts/${appId}/public/data/projects/${projectId}/transactions`;
             const q = query(collection(db, transactionsPath), where("status", "==", "approved"));
             
-            let allTransactionsData = []; // Store transaction data for AI analysis
-
             const unsub = onSnapshot(q, (snapshot) => {
                 let totalIn = 0;
                 let totalOut = 0;
-                allTransactionsData = []; // Reset on each update
 
                 if (snapshot.empty) {
                     transactionsListEl.innerHTML = `<div class="card p-6 text-center text-gray-500">No approved transactions yet.</div>`;
-                    insightsBtn.disabled = true;
                 } else {
-                    insightsBtn.disabled = false;
                     transactionsListEl.innerHTML = snapshot.docs.map(doc => {
                         const tx = doc.data();
-                        allTransactionsData.push(tx); // Collect data for AI
                         const amount = parseFloat(tx.amount) || 0;
                         if (tx.type === 'in') {
                             totalIn += amount;
@@ -2405,38 +2335,6 @@
                 totalOutEl.textContent = `₹${totalOut.toFixed(2)}`;
             });
             currentUnsubscribes.push(unsub);
-            
-            // --- AI Insights Logic ---
-            insightsBtn.addEventListener('click', async () => {
-                insightsContainer.classList.remove('hidden');
-                insightsContainer.innerHTML = `<div class="flex items-center gap-2"><div class="spinner"></div><span>Generating financial insights...</span></div>`;
-                
-                const transactionsSummary = allTransactionsData.map(tx => 
-                    `- Type: ${tx.type}, Party: ${tx.party}, Amount: ${tx.amount}, Description: ${tx.description || 'N/A'}`
-                ).join('\n');
-
-                const prompt = `
-                    You are a financial analyst for a construction company. Based on the following transaction list for a single project, provide a brief analysis in markdown format. 
-                    Your analysis should include:
-                    1.  A heading "Financial Snapshot" with a quick summary of total income, total expenditure, and the current balance.
-                    2.  A heading "Key Observations" with bullet points highlighting the top 3-4 expense categories or parties.
-                    3.  A heading "Potential Risks or Recommendations" with one or two bullet points suggesting areas for cost control or noting potential cash flow issues.
-                    Be professional and data-driven.
-                    
-                    Here is the transaction data:
-                    ---
-                    ${transactionsSummary}
-                    ---
-                `;
-
-                const aiInsights = await callGemini(prompt);
-                const formattedInsights = aiInsights.replace(/```markdown\n|```/g, '').trim()
-                                                    .replace(/### (.*)/g, '<h3 class="text-lg font-semibold mt-3 mb-1">$1</h3>')
-                                                    .replace(/## (.*)/g, '<h2 class="text-xl font-bold mt-4 mb-2">$1</h2>')
-                                                    .replace(/\* (.*)/g, '<li class="ml-4 list-disc">$1</li>');
-
-                insightsContainer.innerHTML = formattedInsights;
-            });
         }
         
         function renderAddTransactionModal(projectId) {
@@ -2444,7 +2342,7 @@
                 <div class="modal">
                     <div class="modal-content max-w-lg">
                          <button id="close-add-tx-modal" class="absolute top-2 right-4 text-2xl font-bold text-gray-500">&times;</button>
-                          <div class="p-4">
+                         <div class="p-4">
                             <h4 class="font-semibold text-gray-500 mb-2">Payment</h4>
                             <div class="grid grid-cols-2 gap-3">
                                 <button data-action="payment-out" class="transaction-type-btn">Payment Out</button>
@@ -2469,7 +2367,7 @@
                                 <button data-action="i-paid" class="transaction-type-btn">I Paid</button>
                                 <button data-action="i-received" class="transaction-type-btn">I Received</button>
                             </div>
-                          </div>
+                         </div>
                     </div>
                 </div>
             `;
@@ -2627,7 +2525,10 @@
                                 <label><input type="radio" name="payment-method" value="Cheque"> Cheque</label>
                             </div>
                              <div class="pt-4 flex flex-col space-y-2">
-                                <button type="submit" class="btn-primary">Save</button>
+                                <button type="submit" class="btn-primary">
+                                    Save
+                                    <div class="spinner hidden ml-2" style="width: 16px; height: 16px; border-width: 2px;"></div>
+                                </button>
                                 <button id="close-payment-modal" type="button" class="w-full px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancel</button>
                             </div>
                         </form>
@@ -2641,6 +2542,11 @@
 
             modalContainer.querySelector('#payment-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
+                const submitBtn = e.target.querySelector('button[type="submit"]');
+                const spinner = submitBtn.querySelector('.spinner');
+                submitBtn.disabled = true;
+                spinner.classList.remove('hidden');
+
                 const party = e.target['payment-party'].value;
                 const amount = parseFloat(e.target['payment-amount'].value);
                 const description = e.target['payment-desc'].value;
@@ -2648,6 +2554,8 @@
 
                 if (!party || isNaN(amount) || amount <= 0) {
                     showNotification("Please fill all required fields correctly.", "error");
+                    submitBtn.disabled = false;
+                    spinner.classList.add('hidden');
                     return;
                 }
 
@@ -2667,6 +2575,8 @@
                     modalContainer.innerHTML = '';
                 } catch (error) {
                      showNotification("Failed to record transaction.", "error");
+                     submitBtn.disabled = false;
+                     spinner.classList.add('hidden');
                 }
             });
         }
