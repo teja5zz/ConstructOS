@@ -235,7 +235,8 @@
             onSnapshot,
             serverTimestamp,
             getDocs,
-            updateDoc
+            updateDoc,
+            deleteDoc
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { 
             getStorage, 
@@ -290,54 +291,6 @@
             setTimeout(() => {
                 notification.classList.remove('show');
             }, 3000);
-        }
-
-        // --- Gemini API Helper ---
-        async function callGemini(prompt, retries = 3, delay = 1000) {
-            // IMPORTANT: REPLACE THIS EMPTY STRING WITH YOUR ACTUAL GEMINI API KEY
-            // For production, this key should be managed via a backend proxy or secure environment variables.
-            const apiKey = ""; 
-
-            if (!apiKey) {
-                console.error("Gemini API Key is missing. Please add it to the `callGemini` function.");
-                return "Error: AI functionality is not configured. An API key is required.";
-            }
-
-            let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
-            const payload = { contents: chatHistory };
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
-
-            for (let i = 0; i < retries; i++) {
-                try {
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-
-                    const result = await response.json();
-                    
-                    if (result.candidates && result.candidates.length > 0 &&
-                        result.candidates[0].content && result.candidates[0].content.parts &&
-                        result.candidates[0].content.parts.length > 0) {
-                        return result.candidates[0].content.parts[0].text;
-                    } else {
-                        throw new Error("Invalid response structure from Gemini API");
-                    }
-                } catch (error) {
-                    console.error(`Attempt ${i + 1} failed:`, error);
-                    if (i < retries - 1) {
-                        await new Promise(res => setTimeout(res, delay));
-                        delay *= 2; // Exponential backoff
-                    } else {
-                        return "Error: Could not get a response from the AI. Please try again.";
-                    }
-                }
-            }
         }
 
         // --- Authentication Logic ---
@@ -675,7 +628,7 @@
             });
         }
 
-        async function renderPayrollTab(container) {
+        function renderPayrollTab(container) {
             container.innerHTML = `
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-xl font-bold">Payroll - ${new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}</h2>
@@ -697,31 +650,36 @@
             const partiesQuery = query(collection(db, masterPartiesPath), where("role", "in", ["Worker", "Employee", "Staff"]));
             const payrollQuery = query(collection(db, payrollPath), where("month", "==", currentMonth));
 
-            const [partiesSnap, payrollSnap] = await Promise.all([getDocs(partiesQuery), getDocs(payrollQuery)]);
-            
-            const paidEmployees = payrollSnap.docs.map(doc => doc.data().partyId);
+            // Use onSnapshot for real-time updates
+            const unsubPayroll = onSnapshot(payrollQuery, (payrollSnap) => {
+                const paidEmployees = payrollSnap.docs.map(doc => doc.data().partyId);
+                
+                const unsubParties = onSnapshot(partiesQuery, (partiesSnap) => {
+                    if (partiesSnap.empty) {
+                        listEl.innerHTML = `<div class="card p-6 text-center text-gray-500">No employees found in your master party list.</div>`;
+                        return;
+                    }
 
-            if (partiesSnap.empty) {
-                listEl.innerHTML = `<div class="card p-6 text-center text-gray-500">No employees found in your master party list.</div>`;
-                return;
-            }
+                    listEl.innerHTML = partiesSnap.docs.map(doc => {
+                        const isPaid = paidEmployees.includes(doc.id);
+                        return `
+                            <div class="card p-4 flex justify-between items-center">
+                                <div><p class="font-semibold text-lg">${doc.data().name}</p><p class="text-sm text-gray-500">${doc.data().role}</p></div>
+                                ${isPaid ? `<span class="text-green-600 font-bold">Paid</span>` : `<button class="btn-pay bg-green-500 text-white text-sm px-3 py-1 rounded" data-party-id="${doc.id}" data-party-name="${doc.data().name}">Record Payment</button>`}
+                            </div>
+                        `;
+                    }).join('');
 
-            listEl.innerHTML = partiesSnap.docs.map(doc => {
-                const isPaid = paidEmployees.includes(doc.id);
-                return `
-                    <div class="card p-4 flex justify-between items-center">
-                        <div><p class="font-semibold text-lg">${doc.data().name}</p><p class="text-sm text-gray-500">${doc.data().role}</p></div>
-                        ${isPaid ? `<span class="text-green-600 font-bold">Paid</span>` : `<button class="btn-pay bg-green-500 text-white text-sm px-3 py-1 rounded" data-party-id="${doc.id}" data-party-name="${doc.data().name}">Record Payment</button>`}
-                    </div>
-                `;
-            }).join('');
-
-            listEl.querySelectorAll('.btn-pay').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const { partyId, partyName } = e.currentTarget.dataset;
-                    renderRecordPayrollModal(partyId, partyName, currentMonth);
+                    listEl.querySelectorAll('.btn-pay').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            const { partyId, partyName } = e.currentTarget.dataset;
+                            renderRecordPayrollModal(partyId, partyName, currentMonth);
+                        });
+                    });
                 });
+                currentUnsubscribes.push(unsubParties);
             });
+            currentUnsubscribes.push(unsubPayroll);
         }
 
         async function renderRecordPayrollModal(partyId, partyName, month) {
@@ -780,7 +738,7 @@
 
                     showNotification("Payroll payment recorded!", "success");
                     modalContainer.innerHTML = '';
-                    renderDashboardTabContent('payroll'); // Refresh tab
+                    // No need to call refresh, onSnapshot will handle it
                 } catch(error) { showNotification("Failed to record payment.", "error"); }
             });
         }
@@ -807,15 +765,37 @@
                     return;
                 }
                 listEl.innerHTML = snapshot.docs.map(doc => `
-                    <div class="card p-4 flex justify-between items-center cursor-pointer" data-material-id="${doc.id}" data-material-name="${doc.data().name}">
-                        <div><p class="font-semibold text-lg">${doc.data().name}</p><p class="text-sm text-gray-500">${doc.data().unit}</p></div>
+                    <div class="card p-4 flex justify-between items-center">
+                        <div class="cursor-pointer flex-grow" data-material-id="${doc.id}" data-material-name="${doc.data().name}">
+                           <p class="font-semibold text-lg">${doc.data().name}</p>
+                           <p class="text-sm text-gray-500">${doc.data().unit}</p>
+                        </div>
+                        <button class="delete-btn text-red-500 hover:text-red-700" data-id="${doc.id}" data-name="${doc.data().name}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                        </button>
                     </div>
                 `).join('');
-                listEl.querySelectorAll('.card').forEach(card => {
+                
+                listEl.querySelectorAll('.card > div').forEach(card => {
                     card.addEventListener('click', (e) => {
                         const materialId = e.currentTarget.dataset.materialId;
                         const materialName = e.currentTarget.dataset.materialName;
                         renderMaterialDetailView(container, materialId, materialName);
+                    });
+                });
+
+                listEl.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const { id, name } = e.currentTarget.dataset;
+                        renderDeleteConfirmationModal(`Are you sure you want to delete the material "${name}"? This cannot be undone.`, async () => {
+                            try {
+                                await deleteDoc(doc(db, masterMaterialsPath, id));
+                                showNotification("Material deleted successfully.", "success");
+                            } catch (error) {
+                                showNotification("Error deleting material.", "error");
+                            }
+                        });
                     });
                 });
             });
@@ -939,15 +919,35 @@
                     return;
                 }
                 masterPartiesListEl.innerHTML = snapshot.docs.map(doc => `
-                    <div class="card p-4 flex justify-between items-center cursor-pointer" data-party-id="${doc.id}" data-party-name="${doc.data().name}">
-                        <div><p class="font-semibold text-lg">${doc.data().name}</p><p class="text-sm text-gray-500">${doc.data().role}</p></div>
+                    <div class="card p-4 flex justify-between items-center">
+                        <div class="cursor-pointer flex-grow" data-party-id="${doc.id}" data-party-name="${doc.data().name}">
+                            <p class="font-semibold text-lg">${doc.data().name}</p>
+                            <p class="text-sm text-gray-500">${doc.data().role}</p>
+                        </div>
+                        <button class="delete-btn text-red-500 hover:text-red-700" data-id="${doc.id}" data-name="${doc.data().name}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                        </button>
                     </div>
                 `).join('');
-                masterPartiesListEl.querySelectorAll('.card').forEach(card => {
+                masterPartiesListEl.querySelectorAll('.card > div').forEach(card => {
                     card.addEventListener('click', (e) => {
                         const partyId = e.currentTarget.dataset.partyId;
                         const partyName = e.currentTarget.dataset.partyName;
                         renderPartyDetailView(container, partyId, partyName);
+                    });
+                });
+                 masterPartiesListEl.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const { id, name } = e.currentTarget.dataset;
+                        renderDeleteConfirmationModal(`Are you sure you want to delete the party "${name}"? This cannot be undone.`, async () => {
+                            try {
+                                await deleteDoc(doc(db, masterPartiesPath, id));
+                                showNotification("Party deleted successfully.", "success");
+                            } catch (error) {
+                                showNotification("Error deleting party.", "error");
+                            }
+                        });
                     });
                 });
             });
@@ -1064,12 +1064,19 @@
             currentUnsubscribes.push(unsub);
         }
 
-        function renderRecordOwnerPaymentModal() {
+        async function renderRecordOwnerPaymentModal() {
+            const partiesPath = `/artifacts/${appId}/users/${currentUser.uid}/parties`;
+            const partiesSnapshot = await getDocs(query(collection(db, partiesPath)));
+            const partiesOptions = partiesSnapshot.docs.map(doc => `<option value="${doc.data().name}">${doc.data().name}</option>`).join('');
+
             modalContainer.innerHTML = `
                 <div class="modal"><div class="modal-content">
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Record Owner Payment</h3>
                     <form id="owner-payment-form" class="space-y-4">
-                        <input type="text" id="owner-name" placeholder="Owner Name *" class="input-field" required>
+                        <select id="owner-name" class="input-field" required>
+                            <option value="" disabled selected>Select Party *</option>
+                            ${partiesOptions}
+                        </select>
                         <input type="number" id="owner-amount" placeholder="Amount" step="0.01" class="input-field" required>
                         <div class="pt-4 flex flex-col space-y-2">
                             <button type="submit" class="btn-primary">Save Payment</button>
@@ -1097,6 +1104,11 @@
                     });
                     showNotification("Payment recorded!", "success");
                     modalContainer.innerHTML = '';
+                    renderAcknowledgementModal({
+                        partyName: ownerName,
+                        amount: amount,
+                        date: new Date().toLocaleDateString('en-IN')
+                    });
                 } catch(error) { showNotification("Failed to record payment.", "error"); }
             });
         }
@@ -1165,7 +1177,13 @@
         }
 
         async function renderActivityFeed(container) {
-            container.innerHTML = `<div id="activity-feed" class="space-y-4">Loading today's activity...</div>`;
+            container.innerHTML = `
+                <div id="activity-feed" class="space-y-4">Loading today's activity...</div>
+                <div class="mt-8">
+                    <h2 class="text-2xl font-bold mb-4">Master Inventory</h2>
+                    <div id="dashboard-inventory-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                </div>
+            `;
             const activityFeedEl = document.getElementById('activity-feed');
             
             const projectsCollectionPath = `/artifacts/${appId}/public/data/projects`;
@@ -1174,32 +1192,82 @@
             
             if (projectsSnapshot.empty) {
                 activityFeedEl.innerHTML = `<div class="card p-6 text-center text-gray-500">No projects found.</div>`;
+            } else {
+                const todayString = new Date().toISOString().split('T')[0];
+                let allActivities = [];
+
+                for (const projectDoc of projectsSnapshot.docs) {
+                    const projectName = projectDoc.data().name;
+                    const logsPath = `/artifacts/${appId}/public/data/projects/${projectDoc.id}/daily_logs`;
+                    const logsQuery = query(collection(db, logsPath), where("date", "==", todayString));
+                    const logsSnapshot = await getDocs(logsQuery);
+                    logsSnapshot.forEach(logDoc => {
+                        allActivities.push({ ...logDoc.data(), projectName });
+                    });
+                }
+
+                if (allActivities.length === 0) {
+                    activityFeedEl.innerHTML = `<div class="card p-6 text-center text-gray-500">No activity recorded today.</div>`;
+                } else {
+                    activityFeedEl.innerHTML = allActivities.map(act => `
+                        <div class="card p-4">
+                            <p class="font-bold text-indigo-700">${act.projectName}</p>
+                            <p class="text-gray-700 whitespace-pre-wrap mt-1">${act.notes}</p>
+                            <p class="text-xs text-gray-400 mt-2">By: ${act.authorEmail}</p>
+                        </div>
+                    `).join('');
+                }
+            }
+
+            renderDashboardInventory(document.getElementById('dashboard-inventory-list'));
+        }
+
+        async function renderDashboardInventory(container) {
+            container.innerHTML = `<div class="col-span-full text-center p-8">Loading inventory...</div>`;
+
+            const masterMaterialsPath = `/artifacts/${appId}/users/${currentUser.uid}/materials`;
+            const masterMaterialsSnap = await getDocs(query(collection(db, masterMaterialsPath)));
+
+            if (masterMaterialsSnap.empty) {
+                container.innerHTML = `<div class="col-span-full card p-6 text-center text-gray-500">No master materials defined.</div>`;
                 return;
             }
 
-            const todayString = new Date().toISOString().split('T')[0];
-            let allActivities = [];
+            const projectsPath = `/artifacts/${appId}/public/data/projects`;
+            const projectsQuery = query(collection(db, projectsPath), where("members", "array-contains", currentUser.uid));
+            const projectsSnapshot = await getDocs(projectsQuery);
+
+            let inventory = {};
+            masterMaterialsSnap.docs.forEach(doc => {
+                inventory[doc.data().name] = { unit: doc.data().unit, stock: 0 };
+            });
 
             for (const projectDoc of projectsSnapshot.docs) {
-                const projectName = projectDoc.data().name;
-                const logsPath = `/artifacts/${appId}/public/data/projects/${projectDoc.id}/daily_logs`;
-                const logsQuery = query(collection(db, logsPath), where("date", "==", todayString));
-                const logsSnapshot = await getDocs(logsQuery);
-                logsSnapshot.forEach(logDoc => {
-                    allActivities.push({ ...logDoc.data(), projectName });
+                const movementsPath = `/artifacts/${appId}/public/data/projects/${projectDoc.id}/material_movements`;
+                const movementsSnapshot = await getDocs(query(collection(db, movementsPath)));
+                
+                movementsSnapshot.forEach(moveDoc => {
+                    const move = moveDoc.data();
+                    move.items.forEach(item => {
+                        if (inventory[item.name]) {
+                            const quantity = parseFloat(item.quantity) || 0;
+                            if (move.type === 'received') {
+                                inventory[item.name].stock += quantity;
+                            } else if (move.type === 'used') {
+                                inventory[item.name].stock -= quantity;
+                            }
+                        }
+                    });
                 });
             }
 
-            if (allActivities.length === 0) {
-                activityFeedEl.innerHTML = `<div class="card p-6 text-center text-gray-500">No activity recorded today.</div>`;
-                return;
-            }
-
-            activityFeedEl.innerHTML = allActivities.map(act => `
-                <div class="card p-4">
-                    <p class="font-bold text-indigo-700">${act.projectName}</p>
-                    <p class="text-gray-700 whitespace-pre-wrap mt-1">${act.notes}</p>
-                    <p class="text-xs text-gray-400 mt-2">By: ${act.authorEmail}</p>
+            container.innerHTML = Object.entries(inventory).map(([name, data]) => `
+                <div class="card p-4 flex justify-between items-center">
+                    <div>
+                        <p class="font-bold">${name}</p>
+                        <p class="text-sm text-gray-500">${data.unit}</p>
+                    </div>
+                    <p class="text-lg font-semibold">${data.stock}</p>
                 </div>
             `).join('');
         }
@@ -1316,16 +1384,39 @@
                 projectsGrid.innerHTML = snapshot.docs.map(doc => {
                     const project = doc.data();
                     return `
-                        <div class="card p-6 cursor-pointer" data-id="${doc.id}">
-                            <h2 class="text-xl font-bold mb-2 truncate">${project.name}</h2>
-                            <p class="text-gray-600 text-sm h-10 overflow-hidden">${project.description || 'No description'}</p>
+                        <div class="card p-6">
+                            <div class="flex justify-between items-start">
+                                <div class="cursor-pointer flex-grow" data-id="${doc.id}">
+                                    <h2 class="text-xl font-bold mb-2 truncate">${project.name}</h2>
+                                    <p class="text-gray-600 text-sm h-10 overflow-hidden">${project.description || 'No description'}</p>
+                                </div>
+                                <button class="delete-btn text-red-500 hover:text-red-700 ml-4" data-id="${doc.id}" data-name="${project.name}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                </button>
+                            </div>
                         </div>
                     `;
                 }).join('');
 
-                projectsGrid.querySelectorAll('.card').forEach(card => {
-                    card.addEventListener('click', () => {
-                        renderProjectView(card.dataset.id);
+                projectsGrid.querySelectorAll('.card > div > div').forEach(card => {
+                    card.addEventListener('click', (e) => {
+                        renderProjectView(e.currentTarget.dataset.id);
+                    });
+                });
+
+                projectsGrid.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const { id, name } = e.currentTarget.dataset;
+                        renderDeleteConfirmationModal(`Are you sure you want to delete project "${name}"? This will delete all associated data and cannot be undone.`, async () => {
+                            try {
+                                // Note: This only deletes the project doc. Subcollections need manual deletion or a Firebase Function.
+                                await deleteDoc(doc(db, projectsCollectionPath, id));
+                                showNotification("Project deleted successfully.", "success");
+                            } catch (error) {
+                                showNotification("Error deleting project.", "error");
+                            }
+                        });
                     });
                 });
             });
@@ -2084,7 +2175,7 @@
                     const file = doc.data();
                     let icon;
                     if (file.fileType.startsWith('image/')) {
-                        icon = '📷';
+                        icon = '�';
                     } else if (file.fileType === 'application/pdf') {
                         icon = '📄';
                     } else {
@@ -2173,15 +2264,10 @@
                         <h3 class="text-lg font-medium text-gray-900 mb-4">New Daily Progress Report</h3>
                         <form id="add-dpr-form" class="space-y-4">
                             <input type="date" id="dpr-date" class="input-field" required>
-                            <textarea id="dpr-notes" placeholder="Enter raw notes, work details, weather conditions, delays, materials used, etc. then click 'Generate with AI' for a clean summary." class="input-field h-32" required></textarea>
+                            <textarea id="dpr-notes" placeholder="Enter work details, weather conditions, delays, materials used, etc." class="input-field h-32" required></textarea>
                             
                             <div class="pt-2 flex flex-col sm:flex-row-reverse gap-2">
                                 <button type="submit" class="btn-primary w-full sm:w-auto">Save Report</button>
-                                <button id="generate-dpr-ai" type="button" class="w-full sm:w-auto px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 flex items-center justify-center gap-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.09 9a3 3 0 0 1 5.82 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
-                                    Generate with AI
-                                    <div id="ai-spinner" class="spinner hidden" style="width: 16px; height: 16px; border-width: 2px;"></div>
-                                </button>
                                 <button id="close-dpr-modal" type="button" class="w-full sm:w-auto mt-2 sm:mt-0 px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancel</button>
                             </div>
                         </form>
@@ -2193,44 +2279,6 @@
 
             modalContainer.querySelector('#close-dpr-modal').addEventListener('click', () => modalContainer.innerHTML = '');
             
-            // --- AI Generation Logic ---
-            modalContainer.querySelector('#generate-dpr-ai').addEventListener('click', async (e) => {
-                const button = e.currentTarget;
-                const spinner = document.getElementById('ai-spinner');
-                const notesArea = document.getElementById('dpr-notes');
-                const rawNotes = notesArea.value;
-
-                if (rawNotes.trim().length < 10) {
-                    showNotification("Please enter some notes first.", "error");
-                    return;
-                }
-
-                button.disabled = true;
-                notesArea.disabled = true;
-                spinner.classList.remove('hidden');
-
-                const prompt = `
-                    Act as a construction project site supervisor.
-                    Summarize the following daily work notes into a clear, professional Daily Progress Report (DPR).
-                    Format the output using markdown. Use headings like "Work Performed", "Materials Used", "Site Conditions", and "Issues/Delays".
-                    Be concise and use bullet points where appropriate.
-                    
-                    Here are the notes:
-                    ---
-                    ${rawNotes}
-                    ---
-                `;
-
-                const aiSummary = await callGemini(prompt);
-                
-                // Clean up the response from markdown code block markers
-                notesArea.value = aiSummary.replace(/```markdown\n|```/g, '').trim();
-
-                button.disabled = false;
-                notesArea.disabled = false;
-                spinner.classList.add('hidden');
-            });
-
             modalContainer.querySelector('#add-dpr-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const logDate = e.target['dpr-date'].value;
@@ -2429,14 +2477,6 @@
                     </div>
                 </div>
 
-                <div class="mb-6">
-                    <button id="get-financial-insights-btn" class="w-full btn-primary !bg-gray-700 hover:!bg-gray-800 flex items-center justify-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.09 9a3 3 0 0 1 5.82 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
-                        Get AI Financial Insights
-                    </button>
-                    <div id="ai-insights-container" class="card p-4 mt-4 hidden bg-indigo-50 border border-indigo-200"></div>
-                </div>
-
                 <div id="transactions-list" class="space-y-3 mb-24">Loading transactions...</div>
                 <div class="fixed bottom-0 left-0 right-0 bg-white p-4 border-t shadow-lg flex justify-around items-center">
                         <button id="payment-in-btn" class="text-green-600 font-bold py-2 px-6 rounded-lg">Payment In</button>
@@ -2453,92 +2493,62 @@
             const balanceEl = document.getElementById('summary-balance');
             const totalInEl = document.getElementById('summary-total-in');
             const totalOutEl = document.getElementById('summary-total-out');
-            const insightsBtn = document.getElementById('get-financial-insights-btn');
-            const insightsContainer = document.getElementById('ai-insights-container');
 
             const transactionsPath = `/artifacts/${appId}/public/data/projects/${projectId}/transactions`;
             const q = query(collection(db, transactionsPath), where("status", "==", "approved"));
             
-            let allTransactionsData = []; // Store transaction data for AI analysis
-
             const unsub = onSnapshot(q, (snapshot) => {
                 let totalIn = 0;
                 let totalOut = 0;
-                allTransactionsData = []; // Reset on each update
 
                 if (snapshot.empty) {
                     transactionsListEl.innerHTML = `<div class="card p-6 text-center text-gray-500">No approved transactions yet.</div>`;
-                    insightsBtn.disabled = true;
                 } else {
-                    insightsBtn.disabled = false;
                     transactionsListEl.innerHTML = snapshot.docs.map(doc => {
                         const tx = doc.data();
-                        allTransactionsData.push(tx); // Collect data for AI
                         const amount = parseFloat(tx.amount) || 0;
+                        const transactionHTML = `
+                            <div>
+                                <p class="font-semibold">${tx.party}</p>
+                                <p class="text-sm text-gray-500">${tx.description || 'Payment'}</p>
+                            </div>
+                            <div class="flex items-center">
+                                <p class="font-bold ${tx.type === 'in' ? 'text-green-600' : 'text-red-600'}">${tx.type === 'in' ? '+' : '-'} ₹${amount.toFixed(2)}</p>
+                                <button class="delete-btn text-red-500 hover:text-red-700 ml-4" data-id="${doc.id}" data-name="${tx.description || 'this transaction'}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                </button>
+                            </div>
+                        `;
                         if (tx.type === 'in') {
                             totalIn += amount;
-                            return `
-                                <div class="card p-4 flex justify-between items-center">
-                                    <div>
-                                        <p class="font-semibold">${tx.party}</p>
-                                        <p class="text-sm text-gray-500">${tx.description || 'Payment Received'}</p>
-                                    </div>
-                                    <p class="font-bold text-green-600">+ ₹${amount.toFixed(2)}</p>
-                                </div>
-                            `;
                         } else {
                             totalOut += amount;
-                            return `
-                                <div class="card p-4 flex justify-between items-center">
-                                    <div>
-                                        <p class="font-semibold">${tx.party}</p>
-                                        <p class="text-sm text-gray-500">${tx.description || 'Payment Made'}</p>
-                                    </div>
-                                    <p class="font-bold text-red-600">- ₹${amount.toFixed(2)}</p>
-                                </div>
-                            `;
                         }
+                        return `<div class="card p-4 flex justify-between items-center">${transactionHTML}</div>`;
                     }).join('');
                 }
                 
+                transactionsListEl.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const { id, name } = e.currentTarget.dataset;
+                        renderDeleteConfirmationModal(`Are you sure you want to delete "${name}"?`, async () => {
+                            try {
+                                await deleteDoc(doc(db, transactionsPath, id));
+                                showNotification("Transaction deleted.", "success");
+                            } catch (error) {
+                                showNotification("Error deleting transaction.", "error");
+                            }
+                        });
+                    });
+                });
+
                 const balance = totalIn - totalOut;
                 balanceEl.textContent = `₹${balance.toFixed(2)}`;
                 totalInEl.textContent = `₹${totalIn.toFixed(2)}`;
                 totalOutEl.textContent = `₹${totalOut.toFixed(2)}`;
             });
             currentUnsubscribes.push(unsub);
-            
-            // --- AI Insights Logic ---
-            insightsBtn.addEventListener('click', async () => {
-                insightsContainer.classList.remove('hidden');
-                insightsContainer.innerHTML = `<div class="flex items-center gap-2"><div class="spinner"></div><span>Generating financial insights...</span></div>`;
-                
-                const transactionsSummary = allTransactionsData.map(tx => 
-                    `- Type: ${tx.type}, Party: ${tx.party}, Amount: ${tx.amount}, Description: ${tx.description || 'N/A'}`
-                ).join('\n');
-
-                const prompt = `
-                    You are a financial analyst for a construction company. Based on the following transaction list for a single project, provide a brief analysis in markdown format. 
-                    Your analysis should include:
-                    1.  A heading "Financial Snapshot" with a quick summary of total income, total expenditure, and the current balance.
-                    2.  A heading "Key Observations" with bullet points highlighting the top 3-4 expense categories or parties.
-                    3.  A heading "Potential Risks or Recommendations" with one or two bullet points suggesting areas for cost control or noting potential cash flow issues.
-                    Be professional and data-driven.
-                    
-                    Here is the transaction data:
-                    ---
-                    ${transactionsSummary}
-                    ---
-                `;
-
-                const aiInsights = await callGemini(prompt);
-                const formattedInsights = aiInsights.replace(/```markdown\n|```/g, '').trim()
-                                                    .replace(/### (.*)/g, '<h3 class="text-lg font-semibold mt-3 mb-1">$1</h3>')
-                                                    .replace(/## (.*)/g, '<h2 class="text-xl font-bold mt-4 mb-2">$1</h2>')
-                                                    .replace(/\* (.*)/g, '<li class="ml-4 list-disc">$1</li>');
-
-                insightsContainer.innerHTML = formattedInsights;
-            });
         }
         
         function renderAddTransactionModal(projectId) {
@@ -2772,6 +2782,85 @@
                 }
             });
         }
+
+        function renderDeleteConfirmationModal(message, onConfirm) {
+            modalContainer.innerHTML = `
+                <div class="modal">
+                    <div class="modal-content max-w-sm">
+                        <h3 class="text-lg font-bold text-gray-900">Confirm Deletion</h3>
+                        <p class="text-sm text-gray-600 mt-2">${message}</p>
+                        <div class="mt-6 flex justify-end gap-4">
+                            <button id="cancel-delete-btn" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancel</button>
+                            <button id="confirm-delete-btn" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            modalContainer.querySelector('#cancel-delete-btn').addEventListener('click', () => modalContainer.innerHTML = '');
+            modalContainer.querySelector('#confirm-delete-btn').addEventListener('click', () => {
+                onConfirm();
+                modalContainer.innerHTML = '';
+            });
+        }
+
+        async function renderAcknowledgementModal(paymentDetails) {
+            const profilePath = `/artifacts/${appId}/users/${currentUser.uid}/company_profile/details`;
+            const docRef = doc(db, profilePath);
+            const docSnap = await getDoc(docRef);
+            const companyProfile = docSnap.exists() ? docSnap.data() : { name: 'Your Company', address: '', gst: '', phone: '' };
+
+            const receiptText = `
+                **PAYMENT ACKNOWLEDGEMENT**
+
+                **${companyProfile.name}**
+                ${companyProfile.address}
+                GSTIN: ${companyProfile.gst}
+                Phone: ${companyProfile.phone}
+                -----------------------------------
+                Date: ${paymentDetails.date}
+
+                Received with thanks from:
+                **${paymentDetails.partyName}**
+
+                The sum of:
+                **₹${paymentDetails.amount.toFixed(2)}**
+
+                This is a computer-generated acknowledgement.
+            `.replace(/^ +/gm, ''); // Remove leading spaces from each line
+
+            modalContainer.innerHTML = `
+                <div class="modal">
+                    <div class="modal-content max-w-md">
+                        <h3 class="text-lg font-bold text-gray-900 mb-4">Acknowledgement</h3>
+                        <div id="receipt-content" class="p-4 border rounded-lg bg-gray-50 whitespace-pre-wrap text-sm">${receiptText}</div>
+                        <div class="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-2">
+                             <button id="copy-receipt-btn" class="btn-primary !bg-gray-500 hover:!bg-gray-600">Copy Text</button>
+                             <a id="whatsapp-share-btn" href="#" class="btn-primary !bg-green-500 hover:!bg-green-600 text-center">WhatsApp</a>
+                             <a id="email-share-btn" href="#" class="btn-primary !bg-blue-500 hover:!bg-blue-600 text-center">Email</a>
+                        </div>
+                         <div class="mt-4 text-center">
+                            <button id="close-ack-modal" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Close</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            const encodedText = encodeURIComponent(receiptText);
+            document.getElementById('whatsapp-share-btn').href = `https://wa.me/?text=${encodedText}`;
+            document.getElementById('email-share-btn').href = `mailto:?subject=Payment Acknowledgement from ${companyProfile.name}&body=${encodedText}`;
+
+            document.getElementById('copy-receipt-btn').addEventListener('click', () => {
+                const tempTextArea = document.createElement('textarea');
+                tempTextArea.value = receiptText;
+                document.body.appendChild(tempTextArea);
+                tempTextArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempTextArea);
+                showNotification('Receipt copied to clipboard!', 'success');
+            });
+
+            modalContainer.querySelector('#close-ack-modal').addEventListener('click', () => modalContainer.innerHTML = '');
+        }
         
         // --- Initial Load ---
         renderLoginForm();
@@ -2779,3 +2868,4 @@
     </script>
 </body>
 </html>
+�
