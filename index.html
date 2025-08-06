@@ -470,6 +470,7 @@
                     <button class="tab" data-tab="finances"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Finances</button>
                     <button class="tab" data-tab="payroll"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Payroll</button>
                     <button class="tab" data-tab="projects"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/></svg>My Projects</button>
+                    <button class="tab" data-tab="reports"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10h3"/><path d="M7 10h2"/><path d="M14 4h6v6"/><path d="M20 10c0-4.4-3.6-8-8-8s-8 3.6-8 8 3.6 8 8 8h1"/><path d="M18 20a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z"/><path d="M21 15a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/><path d="M8 20a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z"/></svg>Reports</button>
                     <button class="tab" data-tab="profile"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profile</button>
                 </div>
                 <div id="dashboard-tab-content"></div>
@@ -503,9 +504,110 @@
                 renderPayrollTab(container);
             } else if (tabName === 'projects') {
                 renderProjectsList(container);
+            } else if (tabName === 'reports') {
+                renderReportsTab(container);
             } else if (tabName === 'profile') {
                 renderProfileTab(container);
             }
+        }
+
+        function renderReportsTab(container) {
+            container.innerHTML = `
+                <h2 class="text-2xl font-bold mb-6">Reports</h2>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold mb-4">Attendance Report</h3>
+                    <div class="flex flex-wrap gap-4 items-end mb-4">
+                        <div>
+                            <label for="report-start-date" class="block text-sm font-medium text-gray-700">Start Date</label>
+                            <input type="date" id="report-start-date" class="input-field mt-1">
+                        </div>
+                        <div>
+                            <label for="report-end-date" class="block text-sm font-medium text-gray-700">End Date</label>
+                            <input type="date" id="report-end-date" class="input-field mt-1">
+                        </div>
+                        <button id="generate-attendance-report" class="btn-primary !w-auto">Generate Report</button>
+                    </div>
+                    <div id="attendance-report-results" class="mt-6"></div>
+                </div>
+            `;
+
+            // Set default dates
+            const endDateInput = document.getElementById('report-end-date');
+            const startDateInput = document.getElementById('report-start-date');
+            endDateInput.value = new Date().toISOString().split('T')[0];
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            startDateInput.value = thirtyDaysAgo.toISOString().split('T')[0];
+
+            document.getElementById('generate-attendance-report').addEventListener('click', async () => {
+                const startDate = document.getElementById('report-start-date').value;
+                const endDate = document.getElementById('report-end-date').value;
+                const resultsContainer = document.getElementById('attendance-report-results');
+
+                if (!startDate || !endDate) {
+                    showNotification("Please select both start and end dates.", "error");
+                    return;
+                }
+                resultsContainer.innerHTML = `<div class="flex items-center gap-2"><div class="spinner"></div><span>Generating report...</span></div>`;
+
+                const projectsPath = `/artifacts/${appId}/public/data/projects`;
+                const projectsQuery = query(collection(db, projectsPath), where("members", "array-contains", currentUser.uid));
+                const projectsSnapshot = await getDocs(projectsQuery);
+
+                if (projectsSnapshot.empty) {
+                    resultsContainer.innerHTML = `<p class="text-gray-500">No projects found for this user.</p>`;
+                    return;
+                }
+
+                let reportData = {};
+
+                for (const projectDoc of projectsSnapshot.docs) {
+                    const projectId = projectDoc.id;
+                    const projectName = projectDoc.data().name;
+                    reportData[projectName] = { headMasons: 0, masons: 0, helpers: 0 };
+
+                    const attendancePath = `/artifacts/${appId}/public/data/projects/${projectId}/attendance`;
+                    const attendanceQuery = query(collection(db, attendancePath), where("__name__", ">=", startDate), where("__name__", "<=", endDate));
+                    const attendanceSnapshot = await getDocs(attendanceQuery);
+
+                    attendanceSnapshot.forEach(doc => {
+                        const data = doc.data();
+                        reportData[projectName].headMasons += parseInt(data.headMasons, 10) || 0;
+                        reportData[projectName].masons += parseInt(data.masons, 10) || 0;
+                        reportData[projectName].helpers += parseInt(data.helpers, 10) || 0;
+                    });
+                }
+
+                if (Object.keys(reportData).length === 0) {
+                     resultsContainer.innerHTML = `<p class="text-gray-500">No attendance data found for the selected period.</p>`;
+                     return;
+                }
+
+                resultsContainer.innerHTML = `
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-white border">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project Name</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Head Masons</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Masons</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Helpers</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                ${Object.entries(reportData).map(([projectName, data]) => `
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">${projectName}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">${data.headMasons}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">${data.masons}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">${data.helpers}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            });
         }
 
         function renderProfileTab(container) {
@@ -1198,9 +1300,9 @@
                 </div>
             `;
              if (currentUserRole !== 'Site Supervisor') {
-                   document.getElementById('add-project-btn').addEventListener('click', () => {
-                       renderAddProjectModal();
-                   });
+                  document.getElementById('add-project-btn').addEventListener('click', () => {
+                      renderAddProjectModal();
+                  });
              }
             const projectsGrid = document.getElementById('projects-grid');
             const projectsCollectionPath = `/artifacts/${appId}/public/data/projects`;
@@ -2444,7 +2546,7 @@
                 <div class="modal">
                     <div class="modal-content max-w-lg">
                          <button id="close-add-tx-modal" class="absolute top-2 right-4 text-2xl font-bold text-gray-500">&times;</button>
-                          <div class="p-4">
+                         <div class="p-4">
                             <h4 class="font-semibold text-gray-500 mb-2">Payment</h4>
                             <div class="grid grid-cols-2 gap-3">
                                 <button data-action="payment-out" class="transaction-type-btn">Payment Out</button>
@@ -2469,7 +2571,7 @@
                                 <button data-action="i-paid" class="transaction-type-btn">I Paid</button>
                                 <button data-action="i-received" class="transaction-type-btn">I Received</button>
                             </div>
-                          </div>
+                         </div>
                     </div>
                 </div>
             `;
